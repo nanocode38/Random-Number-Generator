@@ -1,0 +1,12 @@
+cao.py
+*.tmp
+*.dat
+*.temp
+temp.*
+tmp.*
+update.*
+cao.*
+.idea/
+.venv/
+__pycatch__/
+*.pyc
