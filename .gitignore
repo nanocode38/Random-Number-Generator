@@ -8,5 +8,7 @@ update.*
 cao.*
 .idea/
 .venv/
+.history/
+.pytest_cache/
 __pycatch__/
 *.pyc
