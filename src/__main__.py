@@ -12,7 +12,6 @@ import json
 
 import pyautogui as pyg
 
-
 EDGE_HIDDEN_DELAY_TIME = 1
 EDGE_POS_FAULT_TOLERANCE = 5
 
@@ -22,6 +21,7 @@ if not (pb.Path('AppData').is_dir() and pb.Path('Classes').is_dir()):
 with open('AppData/data.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
+
 class Main(object):
     def __init__(self, is_edge_hiding_mode, is_deduplication_mode):
         self.root = tk.Tk()
@@ -30,6 +30,23 @@ class Main(object):
         self.root.title("随机学号生成器")
         self.root.wm_iconbitmap("AppData/icon.ico")
         self.root.protocol("WM_DELETE_WINDOW", self.save_data_and_exit)
+
+        # 创建现代化样式
+        style = ttk.Style()
+        style.theme_use('vista')  # 使用最现代化的内置主题
+
+        # 配置组件样式
+        style.configure('TLabel', font=('Microsoft YaHei', 10))
+        style.configure('Header.TLabel', font=('Microsoft YaHei', 12, 'bold'))
+        style.configure('Big.TLabel', font=('Times', 60, 'bold'), foreground='red', anchor='center')
+        style.configure('Name.TLabel', font=('Times', 30, 'bold'), foreground='red', anchor='center')
+        style.configure('TButton', font=('Microsoft YaHei', 12), padding=6)
+        style.configure('Big.TButton', font=('Times', 30, 'bold'), padding=10)
+        style.configure('TCheckbutton', font=('Microsoft YaHei', 10))
+        # style.map('TCheckbutton',
+        #           background=[('active', '!disabled', 'SystemButtonFace')],
+        #           foreground=[('active', 'black')])
+
         menu = tk.Menu(self.root)
         submenu = tk.Menu(menu, tearoff=False)
         submenu.add_command(label="帮助", command=self.help)
@@ -37,27 +54,40 @@ class Main(object):
         menu.add_cascade(label="关于", menu=submenu)
         self.root.config(menu=menu)
 
-        tk.Label(self.root, text="班级: ", font=('KaiTi', 13)).place(x=2, y=3)
+        # 使用ttk组件替代tk组件
+        ttk.Label(self.root, text="班级: ", style='Header.TLabel').place(x=2, y=3)
         self.class_var = tk.StringVar()
         self.classes = list()
         for file in os.listdir('Classes/'):
             if file.endswith('.csv'):
                 self.classes.append(file)
                 self._classes_name = [file.split('.')[0] for file in self.classes]
-        self.combobox = ttk.Combobox(self.root, textvariable=self.class_var, values=self._classes_name, state="readonly", width=10)
+        self.combobox = ttk.Combobox(self.root, textvariable=self.class_var, values=self._classes_name,
+                                     state="readonly", width=10)
         self.combobox.place(x=60, y=5)
+
+        # # 使用现代化标签样式
+        # self.label = ttk.Label(self.root, style='Big.TLabel', width=3)
+        # self.label.place(x=5, y=(290 - 100) // 2 + 20)  # 调整位置
+        #
+        # self.label1 = ttk.Label(self.root, style='Name.TLabel', width=6)
+        # self.label1.place(x=230, y=(290 - 100) // 2 + 20)  # 调整位置
+
         self.label = tk.Label(self.root, text="", bg='white', fg='red', width=3, height=2, font=("Times", 60, "bold"))
         self.label.place(x=5, y=(290 - self.label.winfo_reqheight()) // 2 + 20)
         self.label1 = tk.Label(self.root, text="", bg='white', fg='red', width=6, height=4, font=("Times", 30, "bold"))
         self.label1.place(x=230, y=(290 - self.label.winfo_reqheight()) // 2 + 20)
-        self.button = tk.Button(self.root, text="     生成随机学号\t", font=("Times", 30, "bold"), command=self.make_random)
-        self.button.place(x=(390 - self.button.winfo_reqwidth()) // 2, y=300)
+
+        # 使用现代化按钮样式
+        self.button = ttk.Button(self.root, text="生成随机学号", style='Big.TButton', command=self.make_random)
+        self.button.place(x=(390 - 250) // 2, y=300)  # 调整位置
+
         self.de_widget = tk.BooleanVar()
         self.de_widget.set(is_deduplication_mode)
-        self.de_weight_button = tk.Checkbutton(self.root, text="去重模式", variable=self.de_widget, onvalue=True, offvalue=False)
-        self.de_weight_button.place(x=300, y=5)
+        self.de_weight_button = ttk.Checkbutton(self.root, text="去重模式", variable=self.de_widget,
+                                                onvalue=True, offvalue=False, style='TCheckbutton')
+        self.de_weight_button.place(x=320, y=5)
         self.number_list = {-10_086}
-
 
         # 贴边隐藏功能
         self.cross_the_boundary_timer = .0
@@ -76,13 +106,13 @@ class Main(object):
         self.edge_hiding_mode = tk.BooleanVar()
         self.edge_hiding_mode.set(is_edge_hiding_mode)
         self.edge_hiding_mode.trace("w", self.switchover_mode)
-        self.edge_hiding_mode_button = tk.Checkbutton(self.root, text="贴边隐藏模式", variable=self.edge_hiding_mode,
-                                                      onvalue=True, offvalue=False)
+        self.edge_hiding_mode_button = ttk.Checkbutton(self.root, text="贴边隐藏模式", variable=self.edge_hiding_mode,
+                                                       onvalue=True, offvalue=False, style='TCheckbutton')
         self.edge_hiding_mode_button.place(x=180, y=5)
 
         self.activate_floating_window.bind("<Enter>", self.start_activate_timer)
         self.activate_floating_window.bind("<Leave>", self.stop_activate_timer)
-        self.activate_floating_window.bind("<Button-1>",  lambda _: self.check_activate(True))
+        self.activate_floating_window.bind("<Button-1>", lambda _: self.check_activate(True))
 
     def make_random(self):
         file = self.class_var.get()
@@ -93,7 +123,6 @@ class Main(object):
         with open('Classes/' + file, newline='', encoding='utf-8') as csv_file:
             row = list(csv.reader(csv_file))[0]
         rand = -10086
-        # print(self.de_widget.get())
         if self.de_widget.get():
             if sorted(list(range(0, len(row))) + [-10086, ]) == sorted(list(self.number_list)):
                 messagebox.showwarning('随机学号生成器', "学号已抽完")
@@ -105,16 +134,16 @@ class Main(object):
         else:
             rand = random.randint(0, len(row) - 1)
         self.number_list.add(rand)
-        self.label.config(text=str(rand+1))
+        self.label.config(text=str(rand + 1))
         self.label1.config(text=row[rand])
-
 
     def about(self):
         toplevel = tk.Toplevel(self.root)
         toplevel.wm_iconbitmap("AppData/icon.ico")
         toplevel.wm_attributes("-topmost", True)
         toplevel.title("随机学号生成器")
-        tk.Label(toplevel, text="随机学号生成器，\n 由nanocode38使用Python tkinter制作， \n更多详见https://github.com/nanocode38/Random-Number-Generator.git").pack()
+        ttk.Label(toplevel,
+                  text="随机学号生成器，\n 由nanocode38使用Python tkinter制作， \n更多详见https://github.com/nanocode38/Random-Number-Generator.git").pack()
         toplevel.mainloop()
 
     def help(self):
@@ -122,8 +151,8 @@ class Main(object):
         toplevel.wm_attributes('-topmost', True)
         toplevel.wm_iconbitmap("AppData/icon.ico")
         toplevel.title("随机学号生成器")
-        tk.Label(toplevel,
-                 text="随机学号生成器，\n 选择班级配置文件，点击按钮生产随机学号").pack()
+        ttk.Label(toplevel,
+                  text="随机学号生成器，\n 选择班级配置文件，点击按钮生产随机学号").pack()
         toplevel.mainloop()
 
     def run(self):
@@ -138,26 +167,31 @@ class Main(object):
             return False
         root_width = self.root.winfo_width()
         screen_size = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
-        if not (self.root.winfo_x() < EDGE_POS_FAULT_TOLERANCE or self.root.winfo_x() > screen_size[0] - root_width - EDGE_POS_FAULT_TOLERANCE):
+        if not (self.root.winfo_x() < EDGE_POS_FAULT_TOLERANCE or self.root.winfo_x() > screen_size[
+            0] - root_width - EDGE_POS_FAULT_TOLERANCE):
             self.cross_the_boundary_timer = 0
-        if (self.root.winfo_x() < EDGE_HIDDEN_DELAY_TIME or self.root.winfo_x() > screen_size[0] - root_width - EDGE_POS_FAULT_TOLERANCE) and self.cross_the_boundary_timer == 0:
+        if (self.root.winfo_x() < EDGE_HIDDEN_DELAY_TIME or self.root.winfo_x() > screen_size[
+            0] - root_width - EDGE_POS_FAULT_TOLERANCE) and self.cross_the_boundary_timer == 0:
             # Hidden Left
             self.cross_the_boundary_timer = time.time()
         elif self.root.winfo_x() < EDGE_POS_FAULT_TOLERANCE and time.time() - self.cross_the_boundary_timer >= EDGE_HIDDEN_DELAY_TIME:
-            self.activate_floating_window.geometry(f"+{EDGE_POS_FAULT_TOLERANCE}+{self.root.winfo_y() + self.root.winfo_width()//2 - 
-                                                         self.activate_floating_window.winfo_height()//2}")
+            self.activate_floating_window.geometry(
+                f"+{EDGE_POS_FAULT_TOLERANCE}+{self.root.winfo_y() + self.root.winfo_width() // 2 -
+                                               self.activate_floating_window.winfo_height() // 2}")
             self.root.withdraw()
             self.activate_floating_window.deiconify()
-        elif self.root.winfo_x() > screen_size[0] - root_width - EDGE_POS_FAULT_TOLERANCE and time.time() - self.cross_the_boundary_timer >= EDGE_HIDDEN_DELAY_TIME:
-            self.activate_floating_window.geometry("+%d+%d" % (self.root.winfo_screenwidth() - EDGE_POS_FAULT_TOLERANCE -
-                                                               self.activate_floating_window.winfo_width(),
-                                                               self.root.winfo_y() + self.root.winfo_width()//2 -
-                                                               self.activate_floating_window.winfo_height()//2))
+        elif self.root.winfo_x() > screen_size[
+            0] - root_width - EDGE_POS_FAULT_TOLERANCE and time.time() - self.cross_the_boundary_timer >= EDGE_HIDDEN_DELAY_TIME:
+            self.activate_floating_window.geometry(
+                "+%d+%d" % (self.root.winfo_screenwidth() - EDGE_POS_FAULT_TOLERANCE -
+                            self.activate_floating_window.winfo_width(),
+                            self.root.winfo_y() + self.root.winfo_width() // 2 -
+                            self.activate_floating_window.winfo_height() // 2))
             self.root.withdraw()
             self.activate_floating_window.deiconify()
         return None
 
-    def check_activate(self, free: bool=False):
+    def check_activate(self, free: bool = False):
         if not self.edge_hiding_mode.get():
             return
         if free or (time.time() - self.activate_timer >= EDGE_HIDDEN_DELAY_TIME and self.activate_timer != .0):
@@ -199,6 +233,7 @@ class Main(object):
             json.dump(data, f)
         self.root.destroy()
         sys.exit(0)
+
 
 if __name__ == "__main__":
     Main(is_deduplication_mode=data['Deduplication mode'], is_edge_hiding_mode=data['Edge hiding mode']).run()
