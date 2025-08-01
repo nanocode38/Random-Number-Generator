@@ -234,7 +234,7 @@ class Main:
         animate_window.withdraw()
 
     def check_cross_the_boundary(self, *_):
-        if not self.edge_hiding_mode.get():
+        if not self.edge_hiding_mode.get() or self.check_mouse_in_window():
             return False
         root_width = self.root.winfo_width()
         screen_size = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
@@ -263,7 +263,7 @@ class Main:
                 self.hidden_animate(self.root.winfo_screenwidth() - EDGE_POS_FAULT_TOLERANCE -
                             self.activate_floating_window.winfo_width(), self.root.winfo_y())
             self.activate_floating_window.deiconify()
-        return None
+        return True
 
     def check_activate(self, free: bool = False):
         if not self.edge_hiding_mode.get():
@@ -285,12 +285,13 @@ class Main:
     def stop_activate_timer(self, *_):
         self.activate_timer = .0
 
-    def check_mouse_in_window(self):
+    def check_mouse_in_window(self) -> bool:
         # 窗体边界范围
         window_x1 = self.root.winfo_rootx()
         window_y1 = self.root.winfo_rooty()
         window_x2 = window_x1 + self.root.winfo_width()
         window_y2 = window_y1 + self.root.winfo_height()
+        window_y1 -= 80
 
         # 鼠标坐标（屏幕绝对坐标）
         mouse_x, mouse_y = pyg.position()
@@ -298,6 +299,8 @@ class Main:
         if (window_x1 <= mouse_x <= window_x2 and
                 window_y1 <= mouse_y <= window_y2):
             self.cross_the_boundary_timer = .0
+            return True
+        return False
 
     def save_data_and_exit(self):
         global data
