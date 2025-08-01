@@ -8,7 +8,6 @@ import tkinter as tk
 from contextlib import suppress
 from tkinter import ttk
 from tkinter import messagebox
-import _tkinter
 import json
 
 import pyautogui as pyg
@@ -127,6 +126,8 @@ class Main:
             ttk.Style().configure('Big.TButton', font=('Times', 30, 'bold'), padding=10)
         self.root.update()
 
+
+
     def make_random(self):
         file = self.class_var.get()
         if not file:
@@ -175,6 +176,63 @@ class Main:
             self.check_activate()
             self.check_mouse_in_window()
 
+    def hidden_animate(self, pos_x, pos_y):
+        self.root.withdraw()
+        animate_window = tk.Toplevel(self.root)
+        animate_window.wm_attributes('-topmost', True)
+        animate_window.wm_attributes('-alpha', 1.0)
+        animate_window.config(bg=self.bg)
+
+        img = tk.PhotoImage(file=f"AppData/{self.mode}.png")
+        label = tk.Label(animate_window, image=img)
+        label.place(x=0, y=0)
+
+        animate_window.withdraw()
+        animate_window.overrideredirect(True)
+        animate_window.geometry('420x420')
+
+        animate_window.deiconify()
+
+        alpha = 1.
+
+        for _ in range(74):
+            alpha -= .006
+            animate_window.wm_attributes('-alpha', alpha)
+            animate_window.update()
+            animate_window.geometry(f"{animate_window.winfo_width() - 5}x{animate_window.winfo_height() - 5}+"
+                                    f"{pos_x}+{pos_y}")
+            time.sleep(.003)
+
+        animate_window.withdraw()
+
+    def show_animate(self, pos_x, pos_y):
+        self.activate_floating_window.withdraw()
+        animate_window = tk.Toplevel(self.root)
+        animate_window.wm_attributes('-topmost', True)
+        animate_window.wm_attributes('-alpha', 0.5)
+
+        img = tk.PhotoImage(file=f"AppData/{self.mode}.png")
+        label = tk.Label(animate_window, image=img)
+        label.place(x=0, y=0)
+
+        animate_window.withdraw()
+        animate_window.overrideredirect(True)
+        animate_window.geometry('50x50')
+
+        animate_window.deiconify()
+
+        alpha = .5
+
+        for _ in range(74):
+            alpha += .006
+            animate_window.wm_attributes('-alpha', alpha)
+            animate_window.update()
+            animate_window.geometry(f"{animate_window.winfo_width() + 5}x{animate_window.winfo_height() + 5}+"
+                                    f"{pos_x}+{pos_y}")
+            time.sleep(.003)
+
+        animate_window.withdraw()
+
     def check_cross_the_boundary(self, *_):
         if not self.edge_hiding_mode.get():
             return False
@@ -189,18 +247,21 @@ class Main:
             self.cross_the_boundary_timer = time.time()
         elif self.root.winfo_x() < EDGE_POS_FAULT_TOLERANCE and time.time() - self.cross_the_boundary_timer >= EDGE_HIDDEN_DELAY_TIME:
             self.activate_floating_window.geometry(
-                f"+{EDGE_POS_FAULT_TOLERANCE}+{self.root.winfo_y() + self.root.winfo_width() // 2 -
-                                               self.activate_floating_window.winfo_height() // 2}")
-            self.root.withdraw()
+                f"+{EDGE_POS_FAULT_TOLERANCE}+{self.root.winfo_y()}"
+            )
+            if self.root.winfo_viewable():
+                self.hidden_animate(EDGE_POS_FAULT_TOLERANCE, self.root.winfo_y())
             self.activate_floating_window.deiconify()
         elif self.root.winfo_x() > screen_size[
             0] - root_width - EDGE_POS_FAULT_TOLERANCE and time.time() - self.cross_the_boundary_timer >= EDGE_HIDDEN_DELAY_TIME:
             self.activate_floating_window.geometry(
                 "+%d+%d" % (self.root.winfo_screenwidth() - EDGE_POS_FAULT_TOLERANCE -
                             self.activate_floating_window.winfo_width(),
-                            self.root.winfo_y() + self.root.winfo_width() // 2 -
-                            self.activate_floating_window.winfo_height() // 2))
-            self.root.withdraw()
+                            self.root.winfo_y()))
+
+            if self.root.winfo_viewable():
+                self.hidden_animate(self.root.winfo_screenwidth() - EDGE_POS_FAULT_TOLERANCE -
+                            self.activate_floating_window.winfo_width(), self.root.winfo_y())
             self.activate_floating_window.deiconify()
         return None
 
@@ -208,8 +269,8 @@ class Main:
         if not self.edge_hiding_mode.get():
             return
         if free or (time.time() - self.activate_timer >= EDGE_HIDDEN_DELAY_TIME and self.activate_timer != .0):
+            self.show_animate(self.root.winfo_x(), self.root.winfo_y())
             self.root.deiconify()
-            self.activate_floating_window.withdraw()
             self.activate_timer = .0
             self.cross_the_boundary_timer = .0
 
