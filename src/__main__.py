@@ -5,6 +5,7 @@ import sys
 import time
 import pathlib as pb
 import tkinter as tk
+from contextlib import suppress
 from tkinter import ttk
 from tkinter import messagebox
 import _tkinter
@@ -23,24 +24,18 @@ with open('AppData/data.json', 'r', encoding='utf-8') as f:
     data = json.load(f)
 
 
-class Main(object):
+class Main:
     def __init__(self, is_edge_hiding_mode, is_deduplication_mode, mode):
         self.root = tk.Tk()
-        self.mode: str = mode
-        sv_ttk.set_theme(self.mode)
-        self.bg = 'white' if self.mode == 'Light' else 'black'
-        self.fg = 'black' if self.mode == 'Light' else 'white'
+        self.mode, self.bg, self.fg = ('white',) * 3
+        self.change_mode(mode)
         self.root.resizable(False, False)
         self.root.geometry("420x430")
         self.root.title("随机学号生成器")
         self.root.wm_iconbitmap("AppData/icon.ico")
         self.root.protocol("WM_DELETE_WINDOW", self.save_data_and_exit)
 
-        # 创建现代化样式
         style = ttk.Style()
-        # style.theme_use('vista')  # 使用最现代化的内置主题
-
-        # 配置组件样式
         style.configure('TLabel', font=('Microsoft YaHei', 10))
         style.configure('Header.TLabel', font=('Microsoft YaHei', 12, 'bold'))
         style.configure('Big.TLabel', font=('Times', 60, 'bold'), foreground='red', anchor='center')
@@ -49,12 +44,21 @@ class Main(object):
         style.configure('TCheckbutton', font=('Microsoft YaHei', 10))
         style.map('TCheckbutton', foreground=[('active', 'grey')])
 
-        menu = tk.Menu(self.root, bg=self.bg)
-        submenu = tk.Menu(menu, tearoff=False, bg=self.bg)
-        submenu.add_command(label="帮助", command=self.help)
-        submenu.add_command(label='关于', command=self.about)
-        menu.add_cascade(label="关于", menu=submenu)
-        self.root.config(menu=menu)
+
+        self.menu = tk.Menu(self.root, bg=self.bg)
+
+        self.about_submenu = tk.Menu(self.menu, tearoff=False, bg=self.bg)
+        self.about_submenu.add_command(label="帮助", command=self.help)
+        self.about_submenu.add_command(label='关于', command=self.about)
+        self.menu.add_cascade(label="关于", menu=self.about_submenu)
+
+        self.mode_submenu = tk.Menu(self.menu, tearoff=False, bg=self.bg)
+        self.mode_submenu.add_command(label="明亮模式", command=lambda: self.change_mode('Light'))
+        self.mode_submenu.add_command(label="暗黑模式", command=lambda: self.change_mode('Dark'))
+        self.menu.add_cascade(label="主题", menu=self.mode_submenu)
+
+        self.root.config(menu=self.menu)
+
 
         ttk.Label(self.root, text="班级: ", style='Header.TLabel').place(x=2, y=3)
         self.class_var = tk.StringVar()
@@ -70,15 +74,14 @@ class Main(object):
         label_bg = '#bbb' if self.mode == 'Light' else '#444'
 
         self.num_label = tk.Label(self.root, text="", bg=label_bg, fg='red', width=3, height=2,
-                                  font=("Times", 60,
-                                                                                                    "bold"))
+                                  font=("Times", 60, "bold"))
         self.num_label.place(x=5, y=(290 - self.num_label.winfo_reqheight()) // 2 + 20)
         self.name_label = tk.Label(self.root, text="", bg=label_bg, fg='red', width=6, height=4, font=("Times", 30,
                                                                                                     "bold"))
         self.name_label.place(x=230, y=(290 - self.num_label.winfo_reqheight()) // 2 + 20)
 
         self.button = ttk.Button(self.root, text="生成随机学号", style='Big.TButton', command=self.make_random)
-        self.button.place(x=(390 - 250) // 2, y=300)
+        self.button.place(x=(420 - self.button.winfo_reqwidth()) // 2, y=300)
 
         self.de_widget = tk.BooleanVar()
         self.de_widget.set(is_deduplication_mode)
@@ -111,6 +114,18 @@ class Main(object):
         self.activate_floating_window.bind("<Enter>", self.start_activate_timer)
         self.activate_floating_window.bind("<Leave>", self.stop_activate_timer)
         self.activate_floating_window.bind("<Button-1>", lambda _: self.check_activate(True))
+
+    def change_mode(self, mode: str):
+        self.mode = mode
+        sv_ttk.set_theme(self.mode)
+        self.bg = 'white' if self.mode == 'Light' else 'black'
+        self.fg = 'black' if self.mode == 'Light' else 'white'
+        with suppress(AttributeError):
+            self.menu.config(bg=self.bg)
+            self.mode_submenu.config(bg=self.bg)
+            self.about_submenu.config(bg=self.bg)
+            ttk.Style().configure('Big.TButton', font=('Times', 30, 'bold'), padding=10)
+        self.root.update()
 
     def make_random(self):
         file = self.class_var.get()
