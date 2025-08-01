@@ -176,40 +176,13 @@ class Main:
             self.check_activate()
             self.check_mouse_in_window()
 
-    def hidden_animate(self, pos_x, pos_y):
+
+    def show_animate(self, pos_x, pos_y, mode='show'):
         self.root.withdraw()
-        animate_window = tk.Toplevel(self.root)
-        animate_window.wm_attributes('-topmost', True)
-        animate_window.wm_attributes('-alpha', 1.0)
-        animate_window.config(bg=self.bg)
-
-        img = tk.PhotoImage(file=f"AppData/{self.mode}.png")
-        label = tk.Label(animate_window, image=img)
-        label.place(x=0, y=0)
-
-        animate_window.withdraw()
-        animate_window.overrideredirect(True)
-        animate_window.geometry('420x420')
-
-        animate_window.deiconify()
-
-        alpha = 1.
-
-        for _ in range(74):
-            alpha -= .006
-            animate_window.wm_attributes('-alpha', alpha)
-            animate_window.update()
-            animate_window.geometry(f"{animate_window.winfo_width() - 5}x{animate_window.winfo_height() - 5}+"
-                                    f"{pos_x}+{pos_y}")
-            time.sleep(.003)
-
-        animate_window.withdraw()
-
-    def show_animate(self, pos_x, pos_y):
         self.activate_floating_window.withdraw()
         animate_window = tk.Toplevel(self.root)
         animate_window.wm_attributes('-topmost', True)
-        animate_window.wm_attributes('-alpha', 0.5)
+        animate_window.wm_attributes('-alpha', .5 if mode == 'show' else 1.)
 
         img = tk.PhotoImage(file=f"AppData/{self.mode}.png")
         label = tk.Label(animate_window, image=img)
@@ -217,17 +190,18 @@ class Main:
 
         animate_window.withdraw()
         animate_window.overrideredirect(True)
-        animate_window.geometry('50x50')
+        animate_window.geometry('50x50' if mode == 'show' else '420x420')
 
         animate_window.deiconify()
 
-        alpha = .5
+        alpha = .5 if mode == 'show' else 1.
 
         for _ in range(74):
-            alpha += .006
+            alpha += .006 if mode == 'show' else -.006
             animate_window.wm_attributes('-alpha', alpha)
             animate_window.update()
-            animate_window.geometry(f"{animate_window.winfo_width() + 5}x{animate_window.winfo_height() + 5}+"
+            animate_window.geometry(f"{animate_window.winfo_width() + (5 if mode == 'show' else -5)}x"
+                                    f"{animate_window.winfo_height() + (5 if mode == 'show' else -5)}+"
                                     f"{pos_x}+{pos_y}")
             time.sleep(.003)
 
@@ -236,6 +210,8 @@ class Main:
     def check_cross_the_boundary(self, *_):
         if not self.edge_hiding_mode.get() or self.check_mouse_in_window():
             return False
+        if self.activate_floating_window.winfo_viewable():
+            return True
         root_width = self.root.winfo_width()
         screen_size = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
         if not (self.root.winfo_x() < EDGE_POS_FAULT_TOLERANCE or self.root.winfo_x() > screen_size[
@@ -250,7 +226,8 @@ class Main:
                 f"+{EDGE_POS_FAULT_TOLERANCE}+{self.root.winfo_y()}"
             )
             if self.root.winfo_viewable():
-                self.hidden_animate(EDGE_POS_FAULT_TOLERANCE, self.root.winfo_y())
+                print('Hekl')
+                self.show_animate(EDGE_POS_FAULT_TOLERANCE, self.root.winfo_y(), mode='hidden')
             self.activate_floating_window.deiconify()
         elif self.root.winfo_x() > screen_size[
             0] - root_width - EDGE_POS_FAULT_TOLERANCE and time.time() - self.cross_the_boundary_timer >= EDGE_HIDDEN_DELAY_TIME:
@@ -260,8 +237,8 @@ class Main:
                             self.root.winfo_y()))
 
             if self.root.winfo_viewable():
-                self.hidden_animate(self.root.winfo_screenwidth() - EDGE_POS_FAULT_TOLERANCE -
-                            self.activate_floating_window.winfo_width(), self.root.winfo_y())
+                self.show_animate(self.root.winfo_screenwidth() - EDGE_POS_FAULT_TOLERANCE -
+                            self.activate_floating_window.winfo_width(), self.root.winfo_y(), mode='hidden')
             self.activate_floating_window.deiconify()
         return True
 
