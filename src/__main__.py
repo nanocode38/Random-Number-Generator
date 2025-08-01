@@ -178,7 +178,6 @@ class Main:
 
 
     def show_animate(self, pos_x, pos_y, *, mode='show', left=False):
-        print(left)
         self.root.withdraw()
         self.activate_floating_window.withdraw()
         animate_window = tk.Toplevel(self.root)
@@ -196,7 +195,7 @@ class Main:
         animate_window.deiconify()
 
         alpha = .5 if mode == 'show' else 1.
-
+        pos_x_copy, pos_y_copy = pos_x, pos_y
         for _ in range(74):
             alpha += .006 if mode == 'show' else -.006
             animate_window.wm_attributes('-alpha', alpha)
@@ -206,12 +205,12 @@ class Main:
                                         f"{animate_window.winfo_height() + (5 if mode == 'show' else -5)}+"
                                         f"{pos_x}+{pos_y}")
             else:
-                pos_x += 5
-                pos_y += 5
+                pos_x_copy -= 5 if mode == 'show' else -5
+                pos_y_copy  -= 5 if mode == 'show' else -5
                 animate_window.geometry(f"{animate_window.winfo_width() + (5 if mode == 'show' else -5)}x"
                                         f"{animate_window.winfo_height() + (5 if mode == 'show' else -5)}+"
-                                        f"{pos_x}+{pos_y}")
-            time.sleep(.003)
+                                        f"{pos_x_copy}+{pos_y_copy}")
+            time.sleep(.002)
 
         animate_window.withdraw()
 
@@ -252,7 +251,12 @@ class Main:
         if not self.edge_hiding_mode.get():
             return
         if free or (time.time() - self.activate_timer >= EDGE_HIDDEN_DELAY_TIME and self.activate_timer != .0):
-            self.show_animate(self.root.winfo_x(), self.root.winfo_y())
+            left = self.activate_floating_window.winfo_x() >= 100
+            if left:
+                self.show_animate(self.activate_floating_window.winfo_x(), self.activate_floating_window.winfo_y(), left=True)
+            else:
+                self.show_animate(self.root.winfo_x(), self.root.winfo_y(), left=False)
+
             self.root.deiconify()
             self.activate_timer = .0
             self.cross_the_boundary_timer = .0
@@ -269,14 +273,12 @@ class Main:
         self.activate_timer = .0
 
     def check_mouse_in_window(self) -> bool:
-        # 窗体边界范围
         window_x1 = self.root.winfo_rootx()
         window_y1 = self.root.winfo_rooty()
         window_x2 = window_x1 + self.root.winfo_width()
         window_y2 = window_y1 + self.root.winfo_height()
         window_y1 -= 80
 
-        # 鼠标坐标（屏幕绝对坐标）
         mouse_x, mouse_y = pyg.position()
 
         if (window_x1 <= mouse_x <= window_x2 and
