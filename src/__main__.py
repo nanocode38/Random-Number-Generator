@@ -177,7 +177,8 @@ class Main:
             self.check_mouse_in_window()
 
 
-    def show_animate(self, pos_x, pos_y, mode='show'):
+    def show_animate(self, pos_x, pos_y, *, mode='show', left=False):
+        print(left)
         self.root.withdraw()
         self.activate_floating_window.withdraw()
         animate_window = tk.Toplevel(self.root)
@@ -200,9 +201,16 @@ class Main:
             alpha += .006 if mode == 'show' else -.006
             animate_window.wm_attributes('-alpha', alpha)
             animate_window.update()
-            animate_window.geometry(f"{animate_window.winfo_width() + (5 if mode == 'show' else -5)}x"
-                                    f"{animate_window.winfo_height() + (5 if mode == 'show' else -5)}+"
-                                    f"{pos_x}+{pos_y}")
+            if not left:
+                animate_window.geometry(f"{animate_window.winfo_width() + (5 if mode == 'show' else -5)}x"
+                                        f"{animate_window.winfo_height() + (5 if mode == 'show' else -5)}+"
+                                        f"{pos_x}+{pos_y}")
+            else:
+                pos_x += 5
+                pos_y += 5
+                animate_window.geometry(f"{animate_window.winfo_width() + (5 if mode == 'show' else -5)}x"
+                                        f"{animate_window.winfo_height() + (5 if mode == 'show' else -5)}+"
+                                        f"{pos_x}+{pos_y}")
             time.sleep(.003)
 
         animate_window.withdraw()
@@ -226,7 +234,6 @@ class Main:
                 f"+{EDGE_POS_FAULT_TOLERANCE}+{self.root.winfo_y()}"
             )
             if self.root.winfo_viewable():
-                print('Hekl')
                 self.show_animate(EDGE_POS_FAULT_TOLERANCE, self.root.winfo_y(), mode='hidden')
             self.activate_floating_window.deiconify()
         elif self.root.winfo_x() > screen_size[
@@ -234,11 +241,10 @@ class Main:
             self.activate_floating_window.geometry(
                 "+%d+%d" % (self.root.winfo_screenwidth() - EDGE_POS_FAULT_TOLERANCE -
                             self.activate_floating_window.winfo_width(),
-                            self.root.winfo_y()))
+                            self.root.winfo_y() + self.root.winfo_height()))
 
             if self.root.winfo_viewable():
-                self.show_animate(self.root.winfo_screenwidth() - EDGE_POS_FAULT_TOLERANCE -
-                            self.activate_floating_window.winfo_width(), self.root.winfo_y(), mode='hidden')
+                self.show_animate(self.root.winfo_x(), self.root.winfo_y(), mode='hidden', left=True)
             self.activate_floating_window.deiconify()
         return True
 
