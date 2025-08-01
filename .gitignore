@@ -12,3 +12,5 @@ cao.*
 .pytest_cache/
 __pycatch__/
 *.pyc
+*.egg-info/
+*.egg-info/*.*

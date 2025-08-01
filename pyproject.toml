@@ -24,6 +24,7 @@ classifiers = [
 ]
 dependencies = [
     "pyautogui>=0.9.54",
+    "sv-ttk>=2.6.1",
 ]
 urls = { repository = "https://github.com/nanocode38/Random-Number-Generator.git" }
 
