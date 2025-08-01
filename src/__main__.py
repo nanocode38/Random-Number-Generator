@@ -11,6 +11,7 @@ import _tkinter
 import json
 
 import pyautogui as pyg
+import sv_ttk
 
 EDGE_HIDDEN_DELAY_TIME = 1
 EDGE_POS_FAULT_TOLERANCE = 5
@@ -23,8 +24,12 @@ with open('AppData/data.json', 'r', encoding='utf-8') as f:
 
 
 class Main(object):
-    def __init__(self, is_edge_hiding_mode, is_deduplication_mode):
+    def __init__(self, is_edge_hiding_mode, is_deduplication_mode, mode):
         self.root = tk.Tk()
+        self.mode: str = mode
+        sv_ttk.set_theme(self.mode)
+        self.bg = 'white' if self.mode == 'Light' else 'black'
+        self.fg = 'black' if self.mode == 'Light' else 'white'
         self.root.resizable(False, False)
         self.root.geometry("420x430")
         self.root.title("随机学号生成器")
@@ -33,28 +38,24 @@ class Main(object):
 
         # 创建现代化样式
         style = ttk.Style()
-        style.theme_use('vista')  # 使用最现代化的内置主题
+        # style.theme_use('vista')  # 使用最现代化的内置主题
 
         # 配置组件样式
         style.configure('TLabel', font=('Microsoft YaHei', 10))
         style.configure('Header.TLabel', font=('Microsoft YaHei', 12, 'bold'))
         style.configure('Big.TLabel', font=('Times', 60, 'bold'), foreground='red', anchor='center')
-        style.configure('Name.TLabel', font=('Times', 30, 'bold'), foreground='red', anchor='center')
         style.configure('TButton', font=('Microsoft YaHei', 12), padding=6)
         style.configure('Big.TButton', font=('Times', 30, 'bold'), padding=10)
         style.configure('TCheckbutton', font=('Microsoft YaHei', 10))
-        # style.map('TCheckbutton',
-        #           background=[('active', '!disabled', 'SystemButtonFace')],
-        #           foreground=[('active', 'black')])
+        style.map('TCheckbutton', foreground=[('active', 'grey')])
 
-        menu = tk.Menu(self.root)
-        submenu = tk.Menu(menu, tearoff=False)
+        menu = tk.Menu(self.root, bg=self.bg)
+        submenu = tk.Menu(menu, tearoff=False, bg=self.bg)
         submenu.add_command(label="帮助", command=self.help)
         submenu.add_command(label='关于', command=self.about)
         menu.add_cascade(label="关于", menu=submenu)
         self.root.config(menu=menu)
 
-        # 使用ttk组件替代tk组件
         ttk.Label(self.root, text="班级: ", style='Header.TLabel').place(x=2, y=3)
         self.class_var = tk.StringVar()
         self.classes = list()
@@ -66,21 +67,18 @@ class Main(object):
                                      state="readonly", width=10)
         self.combobox.place(x=60, y=5)
 
-        # # 使用现代化标签样式
-        # self.label = ttk.Label(self.root, style='Big.TLabel', width=3)
-        # self.label.place(x=5, y=(290 - 100) // 2 + 20)  # 调整位置
-        #
-        # self.label1 = ttk.Label(self.root, style='Name.TLabel', width=6)
-        # self.label1.place(x=230, y=(290 - 100) // 2 + 20)  # 调整位置
+        label_bg = '#bbb' if self.mode == 'Light' else '#444'
 
-        self.label = tk.Label(self.root, text="", bg='white', fg='red', width=3, height=2, font=("Times", 60, "bold"))
-        self.label.place(x=5, y=(290 - self.label.winfo_reqheight()) // 2 + 20)
-        self.label1 = tk.Label(self.root, text="", bg='white', fg='red', width=6, height=4, font=("Times", 30, "bold"))
-        self.label1.place(x=230, y=(290 - self.label.winfo_reqheight()) // 2 + 20)
+        self.num_label = tk.Label(self.root, text="", bg=label_bg, fg='red', width=3, height=2,
+                                  font=("Times", 60,
+                                                                                                    "bold"))
+        self.num_label.place(x=5, y=(290 - self.num_label.winfo_reqheight()) // 2 + 20)
+        self.name_label = tk.Label(self.root, text="", bg=label_bg, fg='red', width=6, height=4, font=("Times", 30,
+                                                                                                    "bold"))
+        self.name_label.place(x=230, y=(290 - self.num_label.winfo_reqheight()) // 2 + 20)
 
-        # 使用现代化按钮样式
         self.button = ttk.Button(self.root, text="生成随机学号", style='Big.TButton', command=self.make_random)
-        self.button.place(x=(390 - 250) // 2, y=300)  # 调整位置
+        self.button.place(x=(390 - 250) // 2, y=300)
 
         self.de_widget = tk.BooleanVar()
         self.de_widget.set(is_deduplication_mode)
@@ -92,11 +90,11 @@ class Main(object):
         # 贴边隐藏功能
         self.cross_the_boundary_timer = .0
         self.activate_timer = .0
-        self.activate_floating_window = tk.Toplevel(self.root, bg="white")
+        self.activate_floating_window = tk.Toplevel(self.root, bg=self.bg)
         self.activate_floating_window.wm_attributes('-topmost', True)
         self.activate_floating_window.wm_attributes('-alpha', 0.4)
-        self.activate_floating_window.config(bg="white")
-        self.activate_floating_window.wm_attributes('-transparentcolor', 'white')
+        self.activate_floating_window.config(bg=self.bg)
+        self.activate_floating_window.wm_attributes('-transparentcolor', self.bg)
         self.activate_floating_window.withdraw()
         self.activate_floating_window.overrideredirect(True)
         self.activate_floating_window.geometry("50x50")
@@ -134,8 +132,8 @@ class Main(object):
         else:
             rand = random.randint(0, len(row) - 1)
         self.number_list.add(rand)
-        self.label.config(text=str(rand + 1))
-        self.label1.config(text=row[rand])
+        self.num_label.config(text=str(rand + 1))
+        self.name_label.config(text=row[rand])
 
     def about(self):
         toplevel = tk.Toplevel(self.root)
@@ -236,4 +234,5 @@ class Main(object):
 
 
 if __name__ == "__main__":
-    Main(is_deduplication_mode=data['Deduplication mode'], is_edge_hiding_mode=data['Edge hiding mode']).run()
+    Main(is_deduplication_mode=data['Deduplication mode'], is_edge_hiding_mode=data['Edge hiding mode'],
+         mode=data["Mode"]).run()
