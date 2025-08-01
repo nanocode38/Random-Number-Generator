@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "RandomStudentNumverGenerator"
+dynamic = ["version"]  # Dynamically fetching versions from code
+description = "A random student number generator with premium and basic versions (all free)"
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [{ name = "nanocode38", email = "nanocode38@88.com" }]
+license = { text = "MIT License" }
+classifiers = [
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Natural Language :: Chinese (Simplified)",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "pyautogui>=0.9.54",
+]
+urls = { repository = "https://github.com/nanocode38/Random-Number-Generator.git" }
+
+# Development dependency
+[project.optional-dependencies]
+dev = ["black", "autoflake", "isort", "setuptools", "wheel"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+
+[tool.autoflake]
+remove_unused_imports = true
+remove_unused_variables = true
+
+[dependency-groups]
+dev = []
+
+[tool.setuptools.dynamic]
+version = {attr = "src.__version__"}
+
+[tool.setuptools.package-data]
+"*" = ["README.md", "HISTORY.md", "LICENSE", "assets/LOGO.png", "img.png", "img_1.png", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md"]

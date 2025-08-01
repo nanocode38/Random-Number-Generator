@@ -1,0 +1,11 @@
+AUTHORS.md
+LICENSE
+README.md
+pyproject.toml
+RandomStudentNumverGenerator.egg-info/PKG-INFO
+RandomStudentNumverGenerator.egg-info/SOURCES.txt
+RandomStudentNumverGenerator.egg-info/dependency_links.txt
+RandomStudentNumverGenerator.egg-info/requires.txt
+RandomStudentNumverGenerator.egg-info/top_level.txt
+src/__init__.py
+src/__main__.py

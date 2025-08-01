@@ -1,0 +1,8 @@
+pyautogui>=0.9.54
+
+[dev]
+black
+autoflake
+isort
+setuptools
+wheel
