@@ -59,6 +59,7 @@ class Main:
         self.activate_floating_window: tk.Wm | None = None
         self.edge_hiding_mode: tk.BooleanVar | None = None
         self.edge_hiding_mode_button: ttk.Checkbutton | None = None
+        self.window_width: int | None = None
         # ========================================================================================== #
 
         # load language
@@ -82,9 +83,13 @@ class Main:
 
     @init_method
     def create_button(self):
+        self.style.configure('Big.TButton', font=('Times', 25, 'bold'), padding=10, background="lightblue",
+                             relief="ridge", focuscolor="lightblue",
+                             lightcolor="lightblue",
+                             darkcolor="lightblue", bordercolor="lightblue")
         self.button = ttk.Button(self.root, text=self.language['Button Text'], style='Big.TButton',
-                                 command=self.make_random)
-        self.button.place(x=(min(ROOT_WINDOW_HEIGHT, ROOT_WINDOW_WIDTH) - self.button.winfo_reqwidth()) // 2, y=300)
+             command=self.make_random, width=len(self.language['Button Text'])*2)
+        self.button.pack(side="bottom")
 
     @init_method
     def load_language_data(self, language):
@@ -110,7 +115,6 @@ class Main:
         self.style.configure('TLabel', font=('Microsoft YaHei', 10))
         self.style.configure('Header.TLabel', font=('Microsoft YaHei', 12, 'bold'))
         self.style.configure('Big.TLabel', font=('Times', 60, 'bold'), foreground='red', anchor='center')
-        self.style.configure('TButton', font=('Microsoft YaHei', 12), padding=6, background='red')
         self.style.configure('Big.TButton', font=('Times', 30, 'bold'), padding=10, background="lightblue",
                         relief="ridge", width=15, focuscolor="lightblue", lightcolor="lightblue",
                         darkcolor="lightblue", bordercolor="lightblue")
@@ -186,7 +190,6 @@ class Main:
         deweight_rect.top = last_rect.top
         deweight_rect.left = last_rect.right + 3
         deweight_rect.pack_widget(self.de_widget_button)
-        # self.de_widget_button.place(x=330, y=5)
         self.number_list = {-10_086}
         return deweight_rect
 
@@ -232,6 +235,11 @@ class Main:
         hide_rect.top = last_rect.top
         hide_rect.left = last_rect.right + 3
         hide_rect.pack_widget(self.edge_hiding_mode_button)
+
+        self.window_width = max(hide_rect.right + 10, ROOT_WINDOW_WIDTH)
+        self.root.geometry(f'{self.window_width}x{ROOT_WINDOW_HEIGHT}')
+        self.root.update()
+
         return hide_rect
 
     def change_language(self):
@@ -324,7 +332,7 @@ class Main:
         animate_window.withdraw()
         animate_window.overrideredirect(True)
         animate_window.geometry('50x50' if mode == 'show' else '{size}x{size}'.format(size=min(ROOT_WINDOW_HEIGHT,
-                                                                                               ROOT_WINDOW_WIDTH)))
+                                                                                               self.window_width)))
 
         animate_window.deiconify()
 
