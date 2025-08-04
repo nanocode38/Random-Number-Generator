@@ -1,8 +1,6 @@
-import platform
 import random
 import csv
 import os
-import subprocess
 import sys
 import time
 import pathlib as pb
@@ -11,17 +9,15 @@ from contextlib import suppress
 from tkinter import ttk
 from tkinter import messagebox
 import json
+from typing import Union
 
 import pyautogui as pyg
 import sv_ttk
 
-# from rect import Rect
+from tools import init_method, restart
+from rect import Rect
+from constant import *
 
-# Constant
-EDGE_HIDDEN_DELAY_TIME = 1
-EDGE_POS_FAULT_TOLERANCE = 5
-ROOT_WINDOW_WIDTH = 500
-ROOT_WINDOW_HEIGHT= 510
 
 # Preprocessing: Loading data
 if not (pb.Path('AppData').is_dir() and pb.Path('Classes').is_dir()):
@@ -30,58 +26,103 @@ if not (pb.Path('AppData').is_dir() and pb.Path('Classes').is_dir()):
 with open('AppData/data.json', encoding='utf-8') as f:
     data = json.load(f)
 
-def restart():
-    """Restart The Program"""
-    program = sys.executable
-    args = sys.argv
-    try:
-        if platform.system() == "Windows":
-            # Try to hide the console window (invalid if the program is a console program; if it is a GUI program, it will not be displayed)
-            # Use the CREATE_NO_WINDOW flag (Windows only)
-            startupinfo = subprocess.STARTUPINFO()
-            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            startupinfo.wShowWindow = subprocess.SW_HIDE  # 隐藏窗口
-            subprocess.Popen([program] + args, startupinfo=startupinfo)
-        else:
-            subprocess.Popen([program] + args)
-    except Exception as e:
-        messagebox.showerror("Error", f"Restart failed: {e}")
-    finally:
-        sys.exit()
 
 
 class Main:
     def __init__(self, is_edge_hiding_mode, is_deduplication_mode, mode, language):
-        with open('AppData/language/{}.json'.format(language), encoding='utf-8') as fp:
-            self.language = json.load(fp)
+        # Declare all attributes in __init__
+        type Color = str
+        type Mode = Union['Dark', 'Light']
 
+        self.language: dict[str, str] | None = None
+        self.root: tk.Tk | None = None
+        self.language_name: tk.StringVar | None = None
+        self.mode: Mode | None = None
+        self.bg: Color | None = None
+        self.fg: Color | None = None
+        self.style: ttk.Style | None = None
+        self.menu: tk.Menu | None = None
+        self.about_submenu: tk.Menu | None = None
+        self.mode_submenu: tk.Menu | None = None
+        self.language_submenu: tk.Menu | None = None
+        self.class_var: tk.StringVar | None = None
+        self.classes: list | None = None
+        self.combobox: ttk.Combobox | None = None
+        self.num_label: tk.Label | None = None
+        self.name_label: tk.Label | None = None
+        self.button: ttk.Button | None = None
+        self.de_widget: tk.BooleanVar | None = None
+        self.de_widget_button: tk.Checkbutton | None = None
+        self.number_list: dict | None = None
+        self.activate_timer: float | None = None
+        self.cross_the_boundary_timer: float | None = None
+        self.activate_floating_window: tk.Wm | None = None
+        self.edge_hiding_mode: tk.BooleanVar | None = None
+        self.edge_hiding_mode_button: ttk.Checkbutton | None = None
+        self.window_width: int | None = None
+        # ========================================================================================== #
 
+        # load language
+        self.load_language_data(language)
+
+        # Create Main Window
         self.root = tk.Tk()
 
-        self.language_name = tk.StringVar()
-        self.language_name.set(language)
+        self.init_language_name(language)
 
+        # Set mode
         self.mode, self.bg, self.fg = ('white',) * 3
         self.change_mode(mode)
 
-        self.root.resizable(False, False)
-        self.root.geometry("%dx%d" % (ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT))
-        self.root.title(self.language['Title'])
-        self.root.wm_iconbitmap("AppData/icon.ico")
-        self.root.protocol("WM_DELETE_WINDOW", self.save_data_and_exit)
+        self.config_window(self.root)
+        self.set_style()
+        self.init_menu()
+        self.init_config_area(is_deduplication_mode, is_edge_hiding_mode)
+        self.init_num_and_name_label()
+        self.create_button()
 
-        style = ttk.Style()
-        style.configure('TLabel', font=('Microsoft YaHei', 10))
-        style.configure('Header.TLabel', font=('Microsoft YaHei', 12, 'bold'))
-        style.configure('Big.TLabel', font=('Times', 60, 'bold'), foreground='red', anchor='center')
-        style.configure('TButton', font=('Microsoft YaHei', 12), padding=6, background='red')
-        style.configure('Big.TButton', font=('Times', 30, 'bold'), padding=10, background="lightblue",
+    @init_method
+    def create_button(self):
+        self.style.configure('Big.TButton', font=('Times', 25, 'bold'), padding=10, background="lightblue",
+                             relief="ridge", focuscolor="lightblue",
+                             lightcolor="lightblue",
+                             darkcolor="lightblue", bordercolor="lightblue")
+        self.button = ttk.Button(self.root, text=self.language['Button Text'], style='Big.TButton',
+             command=self.make_random, width=len(self.language['Button Text'])*2)
+        self.button.pack(side="bottom")
+
+    @init_method
+    def load_language_data(self, language):
+        with open('AppData/language/{}.json'.format(language), encoding='utf-8') as fp:
+            self.language = json.load(fp)
+
+    @init_method
+    def init_language_name(self, language):
+        self.language_name = tk.StringVar()
+        self.language_name.set(language)
+
+    @init_method
+    def config_window(self, window):
+        window.resizable(False, False)
+        window.geometry("%dx%d" % (ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT))
+        window.title(self.language['Title'])
+        window.wm_iconbitmap("AppData/icon.ico")
+        window.protocol("WM_DELETE_WINDOW", self.save_data_and_exit)
+
+    @init_method
+    def set_style(self):
+        self.style = ttk.Style()
+        self.style.configure('TLabel', font=('Microsoft YaHei', 10))
+        self.style.configure('Header.TLabel', font=('Microsoft YaHei', 12, 'bold'))
+        self.style.configure('Big.TLabel', font=('Times', 60, 'bold'), foreground='red', anchor='center')
+        self.style.configure('Big.TButton', font=('Times', 30, 'bold'), padding=10, background="lightblue",
                         relief="ridge", width=15, focuscolor="lightblue", lightcolor="lightblue",
                         darkcolor="lightblue", bordercolor="lightblue")
-        style.configure('TCheckbutton', font=('Microsoft YaHei', 10))
-        style.map('TCheckbutton', foreground=[('active', 'grey')])
+        self.style.configure('TCheckbutton', font=('Microsoft YaHei', 10))
+        self.style.map('TCheckbutton', foreground=[('active', 'grey')])
 
-
+    @init_method
+    def init_menu(self):
         self.menu = tk.Menu(self.root, bg=self.bg)
 
         self.about_submenu = tk.Menu(self.menu, tearoff=False, bg=self.bg)
@@ -101,24 +142,35 @@ class Main:
                 self.language_submenu.add_radiobutton(label=language, variable=self.language_name,
                 command=self.change_language, value=language, indicatoron=True)
         self.menu.add_cascade(label=self.language['Language'], menu=self.language_submenu)
-        count = self.language_submenu.index(tk.END) + 1  # 菜单项数量
+
+        count = self.language_submenu.index(tk.END) + 1
         for i in range(count):
             self.language_submenu.entryconfig(i, selectcolor=self.fg)
 
         self.root.config(menu=self.menu)
 
-
-        ttk.Label(self.root, text=self.language['Class'] + ": ", style='Header.TLabel').place(x=2, y=3)
+    @init_method
+    def init_config_area(self, is_deduplication_mode, is_edge_hiding_mode):
+        (_ := ttk.Label(self.root, text=self.language['Class'] + ": ", style='Header.TLabel')).place(x=2, y=3)
+        class_rect = Rect(_)
         self.class_var = tk.StringVar()
-        self.classes = list()
+        self.classes = []
         for file in os.listdir('Classes/'):
             if file.endswith('.csv'):
                 self.classes.append(file)
                 self._classes_name = [file.split('.')[0] for file in self.classes]
         self.combobox = ttk.Combobox(self.root, textvariable=self.class_var, values=self._classes_name,
                                      state="readonly", width=10)
-        self.combobox.place(x=60, y=5)
+        combobox_rect = Rect(self.combobox)
+        combobox_rect.top = class_rect.top
+        combobox_rect.left = class_rect.right + 3
+        combobox_rect.pack_widget(self.combobox)
 
+        hide_rect = self.init_deweight_checkbox(is_deduplication_mode, combobox_rect)
+        self.init_hide_mode(is_edge_hiding_mode, hide_rect)
+
+    @init_method
+    def init_num_and_name_label(self):
         label_bg = '#bbb' if self.mode == 'Light' else '#444'
 
         self.num_label = tk.Label(self.root, text="", bg=label_bg, fg='red', width=3, height=2,
@@ -128,20 +180,40 @@ class Main:
                                                                                                     "bold"))
         self.name_label.place(x=230, y=(290 - self.num_label.winfo_reqheight()) // 2 + 20)
 
-        self.button = ttk.Button(self.root, text=self.language['Button Text'], style='Big.TButton',
-                                 command=self.make_random)
-        self.button.place(x=(min(ROOT_WINDOW_HEIGHT, ROOT_WINDOW_WIDTH) - self.button.winfo_reqwidth()) // 2, y=300)
-
+    @init_method
+    def init_deweight_checkbox(self, is_deduplication_mode, last_rect):
         self.de_widget = tk.BooleanVar()
         self.de_widget.set(is_deduplication_mode)
-        self.de_weight_button = ttk.Checkbutton(self.root, text=self.language['Deduplication'], variable=self.de_widget,
+        self.de_widget_button = ttk.Checkbutton(self.root, text=self.language['Deduplication'], variable=self.de_widget,
                                                 onvalue=True, offvalue=False, style='TCheckbutton')
-        self.de_weight_button.place(x=330, y=5)
+        deweight_rect = Rect(self.de_widget_button)
+        deweight_rect.top = last_rect.top
+        deweight_rect.left = last_rect.right + 3
+        deweight_rect.pack_widget(self.de_widget_button)
         self.number_list = {-10_086}
+        return deweight_rect
 
-        # 贴边隐藏功能
+    @init_method
+    def init_hide_mode(self, is_edge_hiding_mode, last_rect):
         self.cross_the_boundary_timer = .0
         self.activate_timer = .0
+
+        self.config_floating_window()
+
+        self._img = tk.PhotoImage(file="AppData/icon.png").subsample(18, 18)
+        tk.Label(self.activate_floating_window, image=self._img).pack()
+
+        self.init_hide_checkbox(is_edge_hiding_mode, last_rect)
+        self.bind_floating_window()
+
+    @init_method
+    def bind_floating_window(self):
+        self.activate_floating_window.bind("<Enter>", self.start_activate_timer)
+        self.activate_floating_window.bind("<Leave>", self.stop_activate_timer)
+        self.activate_floating_window.bind("<Button-1>", lambda _: self.check_activate(True))
+
+    @init_method
+    def config_floating_window(self):
         self.activate_floating_window = tk.Toplevel(self.root, bg=self.bg)
         self.activate_floating_window.wm_attributes('-topmost', True)
         self.activate_floating_window.wm_attributes('-alpha', 0.4)
@@ -150,21 +222,25 @@ class Main:
         self.activate_floating_window.withdraw()
         self.activate_floating_window.overrideredirect(True)
         self.activate_floating_window.geometry("50x50")
-        self._img = tk.PhotoImage(file="AppData/icon.png").subsample(18, 18)
-        tk.Label(self.activate_floating_window, image=self._img).pack()
 
+    @init_method
+    def init_hide_checkbox(self, is_edge_hiding_mode, last_rect):
         self.edge_hiding_mode = tk.BooleanVar()
         self.edge_hiding_mode.set(is_edge_hiding_mode)
         self.edge_hiding_mode.trace("w", self.switchover_mode)
         self.edge_hiding_mode_button = ttk.Checkbutton(self.root, text=self.language['Hide'],
                                                        variable=self.edge_hiding_mode,
                                                        onvalue=True, offvalue=False, style='TCheckbutton')
-        self.edge_hiding_mode_button.place(x=190, y=5)
+        hide_rect = Rect(self.edge_hiding_mode_button)
+        hide_rect.top = last_rect.top
+        hide_rect.left = last_rect.right + 3
+        hide_rect.pack_widget(self.edge_hiding_mode_button)
 
-        self.activate_floating_window.bind("<Enter>", self.start_activate_timer)
-        self.activate_floating_window.bind("<Leave>", self.stop_activate_timer)
-        self.activate_floating_window.bind("<Button-1>", lambda _: self.check_activate(True))
+        self.window_width = max(hide_rect.right + 10, ROOT_WINDOW_WIDTH)
+        self.root.geometry(f'{self.window_width}x{ROOT_WINDOW_HEIGHT}')
+        self.root.update()
 
+        return hide_rect
 
     def change_language(self):
         try:
@@ -190,8 +266,7 @@ class Main:
             self.menu.config(bg=self.bg)
             self.mode_submenu.config(bg=self.bg)
             self.about_submenu.config(bg=self.bg)
-            ttk.Style().configure('Big.TButton', font=('Times', 30, 'bold'), padding=10, background="lightblue",
-                                  relief="ridge", width=15)
+            self.set_style()
             count = self.language_submenu.index(tk.END) + 1  # 菜单项数量
             for i in range(count):
                 self.language_submenu.entryconfig(i, selectcolor=self.fg)
@@ -243,7 +318,6 @@ class Main:
             self.check_activate()
             self.check_mouse_in_window()
 
-
     def show_animate(self, pos_x, pos_y, *, mode='show', left=False):
         self.root.withdraw()
         self.activate_floating_window.withdraw()
@@ -258,7 +332,7 @@ class Main:
         animate_window.withdraw()
         animate_window.overrideredirect(True)
         animate_window.geometry('50x50' if mode == 'show' else '{size}x{size}'.format(size=min(ROOT_WINDOW_HEIGHT,
-                                                                                               ROOT_WINDOW_WIDTH)))
+                                                                                               self.window_width)))
 
         animate_window.deiconify()
 
