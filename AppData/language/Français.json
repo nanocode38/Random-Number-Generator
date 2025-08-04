@@ -1,0 +1,19 @@
+{
+    "Name": "Français",
+    "Language": "Langue",
+    "Title": "Générateur de numéros aléatoires",
+    "Help": "Aide",
+    "About": "À propos",
+    "Mode": "Thème",
+    "Dark": "Mode sombre",
+    "Light": "Mode clair",
+    "Class": "Classe",
+    "Button Text": "Générer un numéro aléatoire",
+    "Deduplication": "Déduplication",
+    "Language Error": "Échec du changement de langue !\n{type!s} :  {e}\nCode d'erreur : {id}",
+    "Restart Info": "Changement de langue réussi !\nPour appliquer les modifications, le programme doit être redémarré. Redémarrer maintenant ?\nVous pouvez également le redémarrer manuellement plus tard.",
+    "Hide": "Masquer au bord",
+    "Message": "Tous les numéros ont été tirés !",
+    "About Text": "Générateur de numéros aléatoires \n Développé par nanocode38 avec Python tkinter.ttk,\nPlus d'informations sur https://github.com/nanocode38/Random-Number-Generator.git",
+    "Help Text": "Générateur de numéros aléatoires,\nCréez un fichier CSV contenant une liste de noms triés par numéro, séparés par des virgules, copiez-le dans le répertoire 'Classes', lancez le programme, sélectionnez une classe, puis cliquez sur le bouton pour tirer un numéro."
+}

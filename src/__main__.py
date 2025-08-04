@@ -1,6 +1,8 @@
+import platform
 import random
 import csv
 import os
+import subprocess
 import sys
 import time
 import pathlib as pb
@@ -13,24 +15,58 @@ import json
 import pyautogui as pyg
 import sv_ttk
 
+# from rect import Rect
+
+# Constant
 EDGE_HIDDEN_DELAY_TIME = 1
 EDGE_POS_FAULT_TOLERANCE = 5
+ROOT_WINDOW_WIDTH = 500
+ROOT_WINDOW_HEIGHT= 510
 
+# Preprocessing: Loading data
 if not (pb.Path('AppData').is_dir() and pb.Path('Classes').is_dir()):
     os.chdir('..')
 
-with open('AppData/data.json', 'r', encoding='utf-8') as f:
+with open('AppData/data.json', encoding='utf-8') as f:
     data = json.load(f)
+
+def restart():
+    """Restart The Program"""
+    program = sys.executable
+    args = sys.argv
+    try:
+        if platform.system() == "Windows":
+            # Try to hide the console window (invalid if the program is a console program; if it is a GUI program, it will not be displayed)
+            # Use the CREATE_NO_WINDOW flag (Windows only)
+            startupinfo = subprocess.STARTUPINFO()
+            startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+            startupinfo.wShowWindow = subprocess.SW_HIDE  # 隐藏窗口
+            subprocess.Popen([program] + args, startupinfo=startupinfo)
+        else:
+            subprocess.Popen([program] + args)
+    except Exception as e:
+        messagebox.showerror("Error", f"Restart failed: {e}")
+    finally:
+        sys.exit()
 
 
 class Main:
-    def __init__(self, is_edge_hiding_mode, is_deduplication_mode, mode):
+    def __init__(self, is_edge_hiding_mode, is_deduplication_mode, mode, language):
+        with open('AppData/language/{}.json'.format(language), encoding='utf-8') as fp:
+            self.language = json.load(fp)
+
+
         self.root = tk.Tk()
+
+        self.language_name = tk.StringVar()
+        self.language_name.set(language)
+
         self.mode, self.bg, self.fg = ('white',) * 3
         self.change_mode(mode)
+
         self.root.resizable(False, False)
-        self.root.geometry("420x430")
-        self.root.title("随机学号生成器")
+        self.root.geometry("%dx%d" % (ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT))
+        self.root.title(self.language['Title'])
         self.root.wm_iconbitmap("AppData/icon.ico")
         self.root.protocol("WM_DELETE_WINDOW", self.save_data_and_exit)
 
@@ -38,8 +74,10 @@ class Main:
         style.configure('TLabel', font=('Microsoft YaHei', 10))
         style.configure('Header.TLabel', font=('Microsoft YaHei', 12, 'bold'))
         style.configure('Big.TLabel', font=('Times', 60, 'bold'), foreground='red', anchor='center')
-        style.configure('TButton', font=('Microsoft YaHei', 12), padding=6)
-        style.configure('Big.TButton', font=('Times', 30, 'bold'), padding=10)
+        style.configure('TButton', font=('Microsoft YaHei', 12), padding=6, background='red')
+        style.configure('Big.TButton', font=('Times', 30, 'bold'), padding=10, background="lightblue",
+                        relief="ridge", width=15, focuscolor="lightblue", lightcolor="lightblue",
+                        darkcolor="lightblue", bordercolor="lightblue")
         style.configure('TCheckbutton', font=('Microsoft YaHei', 10))
         style.map('TCheckbutton', foreground=[('active', 'grey')])
 
@@ -47,19 +85,30 @@ class Main:
         self.menu = tk.Menu(self.root, bg=self.bg)
 
         self.about_submenu = tk.Menu(self.menu, tearoff=False, bg=self.bg)
-        self.about_submenu.add_command(label="帮助", command=self.help)
-        self.about_submenu.add_command(label='关于', command=self.about)
-        self.menu.add_cascade(label="关于", menu=self.about_submenu)
+        self.about_submenu.add_command(label=self.language['Help'], command=self.help)
+        self.about_submenu.add_command(label=self.language['About'], command=self.about)
+        self.menu.add_cascade(label=self.language['About'], menu=self.about_submenu)
 
         self.mode_submenu = tk.Menu(self.menu, tearoff=False, bg=self.bg)
-        self.mode_submenu.add_command(label="明亮模式", command=lambda: self.change_mode('Light'))
-        self.mode_submenu.add_command(label="暗黑模式", command=lambda: self.change_mode('Dark'))
-        self.menu.add_cascade(label="主题", menu=self.mode_submenu)
+        self.mode_submenu.add_command(label=self.language['Light'], command=lambda: self.change_mode('Light'))
+        self.mode_submenu.add_command(label=self.language['Dark'], command=lambda: self.change_mode('Dark'))
+        self.menu.add_cascade(label=self.language['Mode'], menu=self.mode_submenu)
+
+        self.language_submenu = tk.Menu(self.menu, tearoff=False, bg=self.bg)
+        for language_file in os.listdir('AppData/language'):
+            if language_file.endswith('.json'):
+                language = language_file.split('.')[0]
+                self.language_submenu.add_radiobutton(label=language, variable=self.language_name,
+                command=self.change_language, value=language, indicatoron=True)
+        self.menu.add_cascade(label=self.language['Language'], menu=self.language_submenu)
+        count = self.language_submenu.index(tk.END) + 1  # 菜单项数量
+        for i in range(count):
+            self.language_submenu.entryconfig(i, selectcolor=self.fg)
 
         self.root.config(menu=self.menu)
 
 
-        ttk.Label(self.root, text="班级: ", style='Header.TLabel').place(x=2, y=3)
+        ttk.Label(self.root, text=self.language['Class'] + ": ", style='Header.TLabel').place(x=2, y=3)
         self.class_var = tk.StringVar()
         self.classes = list()
         for file in os.listdir('Classes/'):
@@ -75,18 +124,19 @@ class Main:
         self.num_label = tk.Label(self.root, text="", bg=label_bg, fg='red', width=3, height=2,
                                   font=("Times", 60, "bold"))
         self.num_label.place(x=5, y=(290 - self.num_label.winfo_reqheight()) // 2 + 20)
-        self.name_label = tk.Label(self.root, text="", bg=label_bg, fg='red', width=6, height=4, font=("Times", 30,
+        self.name_label = tk.Label(self.root, text="", bg=label_bg, fg='red', width=8, height=4, font=("Times", 30,
                                                                                                     "bold"))
         self.name_label.place(x=230, y=(290 - self.num_label.winfo_reqheight()) // 2 + 20)
 
-        self.button = ttk.Button(self.root, text="生成随机学号", style='Big.TButton', command=self.make_random)
-        self.button.place(x=(420 - self.button.winfo_reqwidth()) // 2, y=300)
+        self.button = ttk.Button(self.root, text=self.language['Button Text'], style='Big.TButton',
+                                 command=self.make_random)
+        self.button.place(x=(min(ROOT_WINDOW_HEIGHT, ROOT_WINDOW_WIDTH) - self.button.winfo_reqwidth()) // 2, y=300)
 
         self.de_widget = tk.BooleanVar()
         self.de_widget.set(is_deduplication_mode)
-        self.de_weight_button = ttk.Checkbutton(self.root, text="去重模式", variable=self.de_widget,
+        self.de_weight_button = ttk.Checkbutton(self.root, text=self.language['Deduplication'], variable=self.de_widget,
                                                 onvalue=True, offvalue=False, style='TCheckbutton')
-        self.de_weight_button.place(x=320, y=5)
+        self.de_weight_button.place(x=330, y=5)
         self.number_list = {-10_086}
 
         # 贴边隐藏功能
@@ -106,27 +156,46 @@ class Main:
         self.edge_hiding_mode = tk.BooleanVar()
         self.edge_hiding_mode.set(is_edge_hiding_mode)
         self.edge_hiding_mode.trace("w", self.switchover_mode)
-        self.edge_hiding_mode_button = ttk.Checkbutton(self.root, text="贴边隐藏模式", variable=self.edge_hiding_mode,
+        self.edge_hiding_mode_button = ttk.Checkbutton(self.root, text=self.language['Hide'],
+                                                       variable=self.edge_hiding_mode,
                                                        onvalue=True, offvalue=False, style='TCheckbutton')
-        self.edge_hiding_mode_button.place(x=180, y=5)
+        self.edge_hiding_mode_button.place(x=190, y=5)
 
         self.activate_floating_window.bind("<Enter>", self.start_activate_timer)
         self.activate_floating_window.bind("<Leave>", self.stop_activate_timer)
         self.activate_floating_window.bind("<Button-1>", lambda _: self.check_activate(True))
 
+
+    def change_language(self):
+        try:
+            language = self.language_name.get()
+            with open('AppData/language/' + language + '.json', encoding='utf-8') as fp:
+                self.language = json.load(fp)
+        except Exception as e:
+            messagebox.showerror(self.language['Title'], self.language['Language Error'].format(type=type(e).__name__,
+                                                                                                e=e, id=hex(id(e))))
+            raise e
+        else:
+            if messagebox.askyesno(self.language['Title'], self.language['Restart Info']):
+                self.save_data_and_exit(silent=True)
+                restart()
+
     def change_mode(self, mode: str):
         self.mode = mode
         sv_ttk.set_theme(self.mode)
+        ttk.Label(self.root, text=self.language['Class'] + ": ", style='Header.TLabel').place(x=2, y=3)
         self.bg = 'white' if self.mode == 'Light' else 'black'
         self.fg = 'black' if self.mode == 'Light' else 'white'
         with suppress(AttributeError):
             self.menu.config(bg=self.bg)
             self.mode_submenu.config(bg=self.bg)
             self.about_submenu.config(bg=self.bg)
-            ttk.Style().configure('Big.TButton', font=('Times', 30, 'bold'), padding=10)
+            ttk.Style().configure('Big.TButton', font=('Times', 30, 'bold'), padding=10, background="lightblue",
+                                  relief="ridge", width=15)
+            count = self.language_submenu.index(tk.END) + 1  # 菜单项数量
+            for i in range(count):
+                self.language_submenu.entryconfig(i, selectcolor=self.fg)
         self.root.update()
-
-
 
     def make_random(self):
         file = self.class_var.get()
@@ -139,7 +208,7 @@ class Main:
         rand = -10086
         if self.de_widget.get():
             if sorted(list(range(0, len(row))) + [-10086, ]) == sorted(list(self.number_list)):
-                messagebox.showwarning('随机学号生成器', "学号已抽完")
+                messagebox.showwarning(self.language['Title'], self.language['Message'])
                 self.number_list = {-10086}
                 self.root.update()
                 return
@@ -155,9 +224,8 @@ class Main:
         toplevel = tk.Toplevel(self.root)
         toplevel.wm_iconbitmap("AppData/icon.ico")
         toplevel.wm_attributes("-topmost", True)
-        toplevel.title("随机学号生成器")
-        ttk.Label(toplevel,
-                  text="随机学号生成器，\n 由nanocode38使用Python tkinter制作， \n更多详见https://github.com/nanocode38/Random-Number-Generator.git").pack()
+        toplevel.title(self.language['Title'])
+        ttk.Label(toplevel, text=self.language['About Text']).pack()
         toplevel.mainloop()
 
     def help(self):
@@ -165,8 +233,7 @@ class Main:
         toplevel.wm_attributes('-topmost', True)
         toplevel.wm_iconbitmap("AppData/icon.ico")
         toplevel.title("随机学号生成器")
-        ttk.Label(toplevel,
-                  text="随机学号生成器，\n 选择班级配置文件，点击按钮生产随机学号").pack()
+        ttk.Label(toplevel, text=self.language['Help Text']).pack()
         toplevel.mainloop()
 
     def run(self):
@@ -190,7 +257,8 @@ class Main:
 
         animate_window.withdraw()
         animate_window.overrideredirect(True)
-        animate_window.geometry('50x50' if mode == 'show' else '420x420')
+        animate_window.geometry('50x50' if mode == 'show' else '{size}x{size}'.format(size=min(ROOT_WINDOW_HEIGHT,
+                                                                                               ROOT_WINDOW_WIDTH)))
 
         animate_window.deiconify()
 
@@ -287,16 +355,18 @@ class Main:
             return True
         return False
 
-    def save_data_and_exit(self):
+    def save_data_and_exit(self, silent=False):
         global data
         data['Deduplication mode'] = self.de_widget.get()
         data['Edge hiding mode'] = self.edge_hiding_mode.get()
+        data['Language'] = self.language['Name']
         with open('AppData/data.json', 'w', encoding='utf-8') as f:
             json.dump(data, f)
         self.root.destroy()
-        sys.exit(0)
+        if not silent:
+            sys.exit(0)
 
 
 if __name__ == "__main__":
     Main(is_deduplication_mode=data['Deduplication mode'], is_edge_hiding_mode=data['Edge hiding mode'],
-         mode=data["Mode"]).run()
+         mode=data["Mode"], language=data["Language"]).run()
