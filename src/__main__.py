@@ -15,6 +15,7 @@ import pyautogui as pyg
 import sv_ttk
 
 from tools import init_method, restart
+from rect import Rect
 from constant import *
 
 
@@ -51,6 +52,7 @@ class Main:
         self.name_label: tk.Label | None = None
         self.button: ttk.Button | None = None
         self.de_widget: tk.BooleanVar | None = None
+        self.de_widget_button: tk.Checkbutton | None = None
         self.number_list: dict | None = None
         self.activate_timer: float | None = None
         self.cross_the_boundary_timer: float | None = None
@@ -74,8 +76,8 @@ class Main:
         self.config_window(self.root)
         self.set_style()
         self.init_menu()
-        self.init_config_area()
-        self.init_num_and_name_label(is_deduplication_mode, is_edge_hiding_mode)
+        self.init_config_area(is_deduplication_mode, is_edge_hiding_mode)
+        self.init_num_and_name_label()
         self.create_button()
 
     @init_method
@@ -144,8 +146,9 @@ class Main:
         self.root.config(menu=self.menu)
 
     @init_method
-    def init_config_area(self):
-        ttk.Label(self.root, text=self.language['Class'] + ": ", style='Header.TLabel').place(x=2, y=3)
+    def init_config_area(self, is_deduplication_mode, is_edge_hiding_mode):
+        (_ := ttk.Label(self.root, text=self.language['Class'] + ": ", style='Header.TLabel')).place(x=2, y=3)
+        class_rect = Rect(_)
         self.class_var = tk.StringVar()
         self.classes = []
         for file in os.listdir('Classes/'):
@@ -154,10 +157,16 @@ class Main:
                 self._classes_name = [file.split('.')[0] for file in self.classes]
         self.combobox = ttk.Combobox(self.root, textvariable=self.class_var, values=self._classes_name,
                                      state="readonly", width=10)
-        self.combobox.place(x=60, y=5)
+        combobox_rect = Rect(self.combobox)
+        combobox_rect.top = class_rect.top
+        combobox_rect.left = class_rect.right + 3
+        combobox_rect.pack_widget(self.combobox)
+
+        hide_rect = self.init_deweight_checkbox(is_deduplication_mode, combobox_rect)
+        self.init_hide_mode(is_edge_hiding_mode, hide_rect)
 
     @init_method
-    def init_num_and_name_label(self, is_deduplication_mode, is_edge_hiding_mode):
+    def init_num_and_name_label(self):
         label_bg = '#bbb' if self.mode == 'Light' else '#444'
 
         self.num_label = tk.Label(self.root, text="", bg=label_bg, fg='red', width=3, height=2,
@@ -167,20 +176,22 @@ class Main:
                                                                                                     "bold"))
         self.name_label.place(x=230, y=(290 - self.num_label.winfo_reqheight()) // 2 + 20)
 
-        self.init_deweight_checkbox(is_deduplication_mode)
-        self.init_hide_mode(is_edge_hiding_mode)
-
     @init_method
-    def init_deweight_checkbox(self, is_deduplication_mode):
+    def init_deweight_checkbox(self, is_deduplication_mode, last_rect):
         self.de_widget = tk.BooleanVar()
         self.de_widget.set(is_deduplication_mode)
-        self.de_weight_button = ttk.Checkbutton(self.root, text=self.language['Deduplication'], variable=self.de_widget,
+        self.de_widget_button = ttk.Checkbutton(self.root, text=self.language['Deduplication'], variable=self.de_widget,
                                                 onvalue=True, offvalue=False, style='TCheckbutton')
-        self.de_weight_button.place(x=330, y=5)
+        deweight_rect = Rect(self.de_widget_button)
+        deweight_rect.top = last_rect.top
+        deweight_rect.left = last_rect.right + 3
+        deweight_rect.pack_widget(self.de_widget_button)
+        # self.de_widget_button.place(x=330, y=5)
         self.number_list = {-10_086}
+        return deweight_rect
 
     @init_method
-    def init_hide_mode(self, is_edge_hiding_mode):
+    def init_hide_mode(self, is_edge_hiding_mode, last_rect):
         self.cross_the_boundary_timer = .0
         self.activate_timer = .0
 
@@ -189,7 +200,7 @@ class Main:
         self._img = tk.PhotoImage(file="AppData/icon.png").subsample(18, 18)
         tk.Label(self.activate_floating_window, image=self._img).pack()
 
-        self.init_hide_checkbox(is_edge_hiding_mode)
+        self.init_hide_checkbox(is_edge_hiding_mode, last_rect)
         self.bind_floating_window()
 
     @init_method
@@ -210,14 +221,18 @@ class Main:
         self.activate_floating_window.geometry("50x50")
 
     @init_method
-    def init_hide_checkbox(self, is_edge_hiding_mode):
+    def init_hide_checkbox(self, is_edge_hiding_mode, last_rect):
         self.edge_hiding_mode = tk.BooleanVar()
         self.edge_hiding_mode.set(is_edge_hiding_mode)
         self.edge_hiding_mode.trace("w", self.switchover_mode)
         self.edge_hiding_mode_button = ttk.Checkbutton(self.root, text=self.language['Hide'],
                                                        variable=self.edge_hiding_mode,
                                                        onvalue=True, offvalue=False, style='TCheckbutton')
-        self.edge_hiding_mode_button.place(x=190, y=5)
+        hide_rect = Rect(self.edge_hiding_mode_button)
+        hide_rect.top = last_rect.top
+        hide_rect.left = last_rect.right + 3
+        hide_rect.pack_widget(self.edge_hiding_mode_button)
+        return hide_rect
 
     def change_language(self):
         try:
