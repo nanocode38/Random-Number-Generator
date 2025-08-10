@@ -18,6 +18,9 @@ from tools import init_method, restart
 from rect import Rect
 from constant import *
 
+DEBUG = os.path.exists('DEBUG')
+if DEBUG:
+    print('Debug Mode On', file=sys.stderr)
 
 # Preprocessing: Loading data
 if not (pb.Path('AppData').is_dir() and pb.Path('Classes').is_dir()):
@@ -442,5 +445,9 @@ class Main:
 
 
 if __name__ == "__main__":
-    Main(is_deduplication_mode=data['Deduplication mode'], is_edge_hiding_mode=data['Edge hiding mode'],
-         mode=data["Mode"], language=data["Language"]).run()
+    try:
+        Main(is_deduplication_mode=data['Deduplication mode'], is_edge_hiding_mode=data['Edge hiding mode'],
+             mode=data["Mode"], language=data["Language"]).run()
+    except Exception:
+        if DEBUG:
+            raise

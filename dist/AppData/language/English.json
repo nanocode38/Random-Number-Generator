@@ -1,0 +1,19 @@
+{
+    "Name": "English",
+    "Language": "Language",
+    "Title": "Random Student Number Generator",
+    "Help": "Help",
+    "About": "About",
+    "Mode": "Theme",
+    "Dark": "Dark Mode",
+    "Light": "Light Mode",
+    "Class": "Class",
+    "Button Text": "Generate",
+    "Deduplication": "Deduplication",
+    "Language Error": "Language change failed!\n{type!s} :  {e}\nCode: {id}",
+    "Restart Info": "The language change was successful!\nThe application language change requires restarting this program. Is it restarting?\nYou can also restart manually later.",
+    "Hide": "Edge Hide",
+    "Message": "All numbers have been drawn!",
+    "About Text": "Random Student Number Generator \n Created by nanocode38 using Python tkinter.ttk, This software has poor synchronization performance, and long-term use may cause errors in the UI interface. Just restart it\n\n For more information, visit https://github.com/nanocode38/Random-Number-Generator.git",
+    "Help Text": "Random Student Number Generator, \n Write a comma-separated list of names sorted by student number as a csv file and copy it to the Classes directory, then start the program and select the class, finally click the button to draw student numbers"
+}

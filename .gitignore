@@ -14,3 +14,6 @@ __pycatch__/
 *.pyc
 *.egg-info/
 *.egg-info/*.*
+*.spec
+build/
+DEBUG
