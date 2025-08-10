@@ -117,7 +117,7 @@ class Main:
         self.style.configure('Big.TLabel', font=('Times', 60, 'bold'), foreground='red', anchor='center')
         self.style.configure('Big.TButton', font=('Times', 30, 'bold'), padding=10, background="lightblue",
                         relief="ridge", width=15, focuscolor="lightblue", lightcolor="lightblue",
-                        darkcolor="lightblue", bordercolor="lightblue")
+                        darkcolor="lightblue", bordercolor="lightblue", borderrounding=5, shadowoffset=2)
         self.style.configure('TCheckbutton', font=('Microsoft YaHei', 10))
         self.style.map('TCheckbutton', foreground=[('active', 'grey')])
 
