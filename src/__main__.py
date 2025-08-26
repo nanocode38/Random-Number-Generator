@@ -12,13 +12,12 @@ import json
 from typing import Union
 
 import pyautogui as pyg
-import sv_ttk
 
 from tools import init_method, restart
 from rect import Rect
 from constant import *
 
-DEBUG = os.path.exists('DEBUG')
+DEBUG = os.path.exists('..//DEBUG')
 if DEBUG:
     print('Debug Mode On', file=sys.stderr)
 
@@ -261,7 +260,8 @@ class Main:
 
     def change_mode(self, mode: str):
         self.mode = mode
-        sv_ttk.set_theme(self.mode)
+        self.root.tk.call("source", "AppData/azure.tcl")
+        self.root.tk.call("set_theme", mode.lower())
         ttk.Label(self.root, text=self.language['Class'] + ": ", style='Header.TLabel').place(x=2, y=3)
         self.bg = 'white' if self.mode == 'Light' else 'black'
         self.fg = 'black' if self.mode == 'Light' else 'white'

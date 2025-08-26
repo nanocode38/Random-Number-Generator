@@ -1,0 +1,41 @@
+# .github/workflows/build-windows.yml - Windows 平台打包
+name: Build Windows Executable with Nuitka
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'  # 请根据你的项目要求调整 Python 版本
+          cache: 'pip'  # 启用 pip 缓存
+          cache-dependency-path: '**/pyproject.toml'  # 根据 pyproject.toml 变化缓存依赖
+
+      - name: Install dependencies from pyproject.toml
+        run: |
+          pip install .
+          # 如果你的项目使用 Poetry，可以替换为以下步骤：
+          # - name: Install Poetry
+          #   run: pip install poetry
+          # - name: Install dependencies with Poetry
+          #   run: poetry install --no-root
+
+      - name: Build with Nuitka (Windows)
+        run: |
+          python -m nuitka --standalone --onefile --windows-icon-from-ico=AppData/icon.ico --output-dir=dist --output-filename=StudenNumberGen-windows.exe src/__main__.py
+        # 请将 your_script.py 替换为你的入口脚本，icon.ico 替换为你的图标文件
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-executable
+          path: dist/StudenNumberGen-windows.exe
