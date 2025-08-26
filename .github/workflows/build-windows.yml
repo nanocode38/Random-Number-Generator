@@ -4,7 +4,7 @@ name: Build Windows Executable with Nuitka
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [ feature-build ]
 
 jobs:
   build-windows:
