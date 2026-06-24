@@ -20,11 +20,12 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
     "pyautogui>=0.9.54",
-    "sv-ttk>=2.6.1",
+    "pyside6>=6.11.1",
 ]
 urls = { repository = "https://github.com/nanocode38/Random-Number-Generator.git" }
 
