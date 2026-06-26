@@ -10,9 +10,8 @@ from PySide6.QtWidgets import (
     QCheckBox, QPushButton, QMessageBox,
     QVBoxLayout, QHBoxLayout
 )
-from PySide6.QtCore import Qt, QTimer, QPoint, QRect, Signal, QPropertyAnimation
-from PySide6.QtGui import QFont, QIcon, QPixmap, QAction, QMouseEvent
-import pyautogui as pyg
+from PySide6.QtCore import Qt, QTimer, QRect, QPropertyAnimation, QParallelAnimationGroup
+from PySide6.QtGui import QFont, QIcon, QPixmap, QAction, QMouseEvent, QCursor
 
 from constant import (
     EDGE_POS_FAULT_TOLERANCE,
@@ -38,6 +37,7 @@ class MainWindow(QMainWindow):
 
         # Window basic settings
         self.setWindowTitle(self.language_data['Title'])
+        self.setWindowOpacity(0.9)
         if DEBUG:
             self.resize(ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
         else:
@@ -281,7 +281,7 @@ class MainWindow(QMainWindow):
         self.check_activate()
 
     def check_cross_the_boundary(self):
-        if not self.is_edge_hiding or self._mouse_in_window():
+        if not self.is_edge_hiding:
             return
         if self.floating_window and self.floating_window.isVisible():
             return
@@ -296,7 +296,7 @@ class MainWindow(QMainWindow):
         near_left = x < EDGE_POS_FAULT_TOLERANCE
         near_right = x > screen_w - w - EDGE_POS_FAULT_TOLERANCE
 
-        if not near_left and not near_right:
+        if not near_left and not near_right  or self._mouse_in_window():
             self.cross_the_boundary_timer = 0.0
             return
 
@@ -307,12 +307,11 @@ class MainWindow(QMainWindow):
                 if near_left:
                     fx = -self.floating_window.width() // 4
                 else:
-                    fx = screen_w - EDGE_POS_FAULT_TOLERANCE - self.floating_window.width()
+                    fx = screen_w - EDGE_POS_FAULT_TOLERANCE - self.floating_window.width() + 5
                 fy = y
                 self.floating_window.move(fx, fy)
                 # Play hide animation
                 self._play_animation(near_left, 'hide')
-
 
     def check_activate(self, force=False):
         if not self.is_edge_hiding:
@@ -326,27 +325,28 @@ class MainWindow(QMainWindow):
             self.cross_the_boundary_timer = 0.0
 
     def _mouse_in_window(self):
-        mx, my = pyg.position()
-        wx, wy = self.x(), self.y()
-        ww, wh = self.width(), self.height()
-        # Allow 80px tolerance above the window
-        if wx <= mx <= wx + ww and wy - 80 <= my <= wy + wh:
-            self.cross_the_boundary_timer = 0.0
-            return True
-        return False
+        return self.frameGeometry().contains(QCursor.pos())
 
     def _play_animation(self, left, mode):
+        # Init animation window
         animate_window = QWidget(None)
         animate_window.setWindowFlags(
             Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
         )
         animate_window.setAttribute(Qt.WA_TranslucentBackground)
+        screenshot = self.grab()
         image = QLabel(animate_window)
-        image.setPixmap(QPixmap(f'AppData/{self.current_mode}.png').scaled(self.width(), self.height(), Qt.KeepAspectRatio))
+        image.setPixmap(screenshot.scaled(
+            self.width(), self.height(),
+            Qt.KeepAspectRatio, Qt.SmoothTransformation
+        ))
         image.show()
         animate_window.show()
-        self.animation = QPropertyAnimation(animate_window, b'geometry')
-        self.animation.setDuration(1000)
+
+        # Geometry animation
+        geo_animation = QPropertyAnimation(animate_window, b'geometry')
+        geo_animation.setDuration(1000)
+
         origin_x, origin_y = self.x(), self.y()
         origin_w, origin_h = self.width(), self.height()
         if left:
@@ -354,20 +354,52 @@ class MainWindow(QMainWindow):
             end_rect = QRect(origin_x, origin_y, 35, 35)
         else:
             start_rect = QRect(origin_x, origin_y, origin_w, origin_h)
-            end_rect = QRect(origin_x + origin_w - 35, origin_y, 35, 35)
+            end_rect = QRect(origin_x + origin_w, origin_y, 35, 35)
         if mode == 'hide':
             self.hide()
         elif mode == 'show':
             start_rect, end_rect = end_rect, start_rect
-        self.animation.setStartValue(start_rect)
-        self.animation.setEndValue(end_rect)
+        geo_animation.setStartValue(start_rect)
+        geo_animation.setEndValue(end_rect)
+
+        # Opacity animation
+        opacity_animation = QPropertyAnimation(animate_window, b'windowOpacity')
+        opacity_animation.setDuration(1000)
+        if mode == 'hide':
+            opacity_animation.setStartValue(0.9)
+            opacity_animation.setEndValue(0.0)
+        elif mode == 'show':
+            animate_window.setWindowOpacity(0.0)
+            opacity_animation.setStartValue(0.0)
+            opacity_animation.setEndValue(0.9)
+
+        # Floating Window Animation
+        self.floating_window.setWindowOpacity(0.0 if mode == 'hide' else 0.9)
+        self.floating_window.show()
+        floating_window_animation = QPropertyAnimation(self.floating_window, b'windowOpacity')
+        floating_window_animation.setDuration(1000)
+        floating_window_animation.setStartValue(0.0 if mode == 'hide' else 0.9)
+        floating_window_animation.setEndValue(0.9 if mode == 'hide' else 0.0)
+
+        # Parallel animation group
+        animation_group = QParallelAnimationGroup(self)
+        animation_group.addAnimation(geo_animation)
+        animation_group.addAnimation(opacity_animation)
+        animation_group.addAnimation(floating_window_animation)
+
+        # Connect animation finished signal
         def _on_animation_finished():
             nonlocal animate_window, self, mode
-            (self if mode == 'show' else self.floating_window).show()
+            show_win = self if mode == 'show' else self.floating_window
+            hide_win = self.floating_window if mode == 'show' else self
+            show_win.show()
+            hide_win.hide()
             self._is_animate = False
             animate_window.destroy()
-        self.animation.finished.connect(_on_animation_finished)
-        self.animation.start()
+        animation_group.finished.connect(_on_animation_finished)
+
+        # Start animation and set flag
+        animation_group.start()
         self._is_animate = True
 
     def save_settings(self):

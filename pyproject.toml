@@ -24,7 +24,6 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
-    "pyautogui>=0.9.54",
     "pyside6>=6.11.1",
 ]
 urls = { repository = "https://github.com/nanocode38/Random-Number-Generator.git" }
