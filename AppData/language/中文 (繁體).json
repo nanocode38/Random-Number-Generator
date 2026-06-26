@@ -14,6 +14,9 @@
     "Restart Info": "語言更改成功!\n應用語言更改需要重啟此程序, 是否重啟?\n您也可以稍後手動重啟。",
     "Hide": "貼邊隱藏模式",
     "Message": "全部學號已抽完!",
-    "About Text": "隨機學號生成器 \n 由nanocode38使用Python tkinter.ttk製作, 本軟件同步性能不佳, 長時間使用可能導致UI界面出錯, 只需重啟即可\n更多信息參加https://github.com/nanocode38/Random-Number-Generator.git",
-    "Help Text": "隨機學號生成器, \n 將按學號排序的使用逗號分隔的姓名表編寫為csv文件後複製到Classes目錄下, 然後啟動程序並選擇班級, 最後點擊按鈕抽學號"
+    "About Text": "隨機學號生成器 \n 由nanocode38使用Python PySide6製作, 本軟件同步性能不佳, 長時間使用可能導致UI界面出錯, 只需重啟即可\n更多信息參加https://github.com/nanocode38/Random-Number-Generator.git",
+    "Help Text": "隨機學號生成器, \n 將按學號排序的使用逗號分隔的姓名表編寫為csv文件後複製到Classes目錄下, 然後啟動程序並選擇班級, 最後點擊按鈕抽學號",
+    "Class file error title": "錯誤",
+    "Class file error": "找不到班級檔案",
+    "Help Window Title": "幫助"
 }

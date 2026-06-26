@@ -21,7 +21,3 @@ def restart():
         messagebox.showerror("Error", f"Restart failed: {e}")
     finally:
         sys.exit()
-
-def init_method(func):
-    """Annotation initialization method"""
-    return func

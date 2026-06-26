@@ -3,14 +3,14 @@ import json
 import csv
 import random
 import os
+import time
 from typing import Optional
-
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QLabel, QComboBox,
     QCheckBox, QPushButton, QMessageBox,
     QVBoxLayout, QHBoxLayout
 )
-from PySide6.QtCore import Qt, QTimer, QPoint, QRect, Signal
+from PySide6.QtCore import Qt, QTimer, QPoint, QRect, Signal, QPropertyAnimation
 from PySide6.QtGui import QFont, QIcon, QPixmap, QAction, QMouseEvent
 import pyautogui as pyg
 
@@ -20,8 +20,9 @@ from constant import (
     ROOT_WINDOW_WIDTH,
     ROOT_WINDOW_HEIGHT
 )
+from tools import restart
 
-
+DEBUG = os.path.exists("DEBUG")
 
 class MainWindow(QMainWindow):
     def __init__(self, is_deduplication_mode, is_edge_hiding_mode, mode, language):
@@ -32,37 +33,43 @@ class MainWindow(QMainWindow):
         self.current_mode = mode
         self.current_language = language
 
-        # 加载语言
+        # Load Language
         self.load_language(language)
 
-        # 窗口基本设置
+        # Window basic settings
         self.setWindowTitle(self.language_data['Title'])
-        self.setFixedSize(ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
+        if DEBUG:
+            self.resize(ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
+        else:
+            self.setFixedSize(ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
         self.setWindowIcon(QIcon('AppData/icon.ico'))
 
-        # 状态变量
+        # state variables
         self.number_list = {-10086}
         self.selected_class = ''
         self.class_names = []
 
-        # 创建控件
+        # Create controls
         self._create_widgets()
         self._create_menu()
 
-        # 边缘隐藏相关
+        # Edge hiding related
         self.floating_window: Optional[QWidget] = None
         self.activate_timer = 0.0
         self.cross_the_boundary_timer = 0.0
         if self.is_edge_hiding:
             self._setup_floating_window()
 
-        # 主循环定时器（替代 while True）
+        # Main loop timer (replace while True)
         self.main_timer = QTimer(self)
         self.main_timer.timeout.connect(self._main_loop_step)
         self.main_timer.start(50)  # 每 50ms 检查一次
 
-        # 应用主题
+        # Apply theme
         self.apply_theme(mode)
+
+        # Animate Flag
+        self._is_animate = False
 
     def load_language(self, lang):
         with open(f'AppData/language/{lang}.json', encoding='utf-8') as f:
@@ -73,15 +80,15 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
 
-        # 顶部区域：班级选择 + 复选框
+        # Top area: class selection + checkbox
         top_layout = QHBoxLayout()
         self.class_label = QLabel(self.language_data['Class'] + ': ')
         self.class_combo = QComboBox()
         self.class_combo.setEditable(False)
-        # 加载班级列表
-        for f in os.listdir('Classes/'):
-            if f.endswith('.csv'):
-                self.class_names.append(f.replace('.csv', ''))
+        # Load class list
+        for file in os.listdir('Classes/'):
+            if file.endswith('.csv'):
+                self.class_names.append(file.replace('.csv', ''))
         self.class_combo.addItems(self.class_names)
         self.class_combo.currentTextChanged.connect(self.on_class_changed)
 
@@ -98,7 +105,7 @@ class MainWindow(QMainWindow):
         top_layout.addWidget(self.hide_check)
         layout.addLayout(top_layout)
 
-        # 中间显示数字和姓名
+        # Middle area: display number and name
         middle_layout = QHBoxLayout()
         self.num_label = QLabel('')
         self.num_label.setFont(QFont('Times', 48, QFont.Bold))
@@ -114,7 +121,7 @@ class MainWindow(QMainWindow):
         middle_layout.addWidget(self.name_label)
         layout.addLayout(middle_layout)
 
-        # 底部按钮
+        # Bottom buttons
         self.random_btn = QPushButton(self.language_data['Button Text'])
         self.random_btn.setFont(QFont('Times', 28, QFont.Bold))
         self.random_btn.clicked.connect(self.make_random)
@@ -123,7 +130,7 @@ class MainWindow(QMainWindow):
     def _create_menu(self):
         menubar = self.menuBar()
 
-        # 关于菜单
+        # About menu
         about_menu = menubar.addMenu(self.language_data['About'])
         help_action = QAction(self.language_data['Help'], self)
         help_action.triggered.connect(self.show_help)
@@ -132,7 +139,7 @@ class MainWindow(QMainWindow):
         about_menu.addAction(help_action)
         about_menu.addAction(about_action)
 
-        # 模式菜单
+        # Mode menu
         mode_menu = menubar.addMenu(self.language_data['Mode'])
         light_action = QAction(self.language_data['Light'], self)
         light_action.triggered.connect(lambda: self.change_mode('Light'))
@@ -141,7 +148,7 @@ class MainWindow(QMainWindow):
         mode_menu.addAction(light_action)
         mode_menu.addAction(dark_action)
 
-        # 语言菜单（单选）
+        # Language menu (radio buttons)
         lang_menu = menubar.addMenu(self.language_data['Language'])
         self.lang_actions = []
         for lang_file in os.listdir('AppData/language'):
@@ -169,17 +176,17 @@ class MainWindow(QMainWindow):
         cls = self.selected_class or 'example'
         filepath = f'Classes/{cls}.csv'
         if not os.path.exists(filepath):
-            QMessageBox.warning(self, '错误', f'找不到班级文件 {filepath}')
+            QMessageBox.warning(self, self.language_data["Class file error title"], f'{self.language_data["Class file error"]} {filepath}')
             return
         with open(filepath, newline='', encoding='utf-8') as f:
             rows = list(csv.reader(f))
         if not rows:
             return
-        names = rows[0]  # 假设只有一行名字
+        names = rows[0]  # Assume there is only one line of names
         n = len(names)
 
         if self.dedup_check.isChecked():
-            # 如果已经抽完所有人
+            # If everyone has been drawn
             if len(self.number_list) - 1 >= n:  # 排除 -10086
                 QMessageBox.information(self, self.language_data['Title'],
                                         self.language_data['Message'])
@@ -213,33 +220,29 @@ class MainWindow(QMainWindow):
                 QPushButton { background-color: #e0e0e0; color: black; }
             ''')
 
-    def change_language(self, lang):
+    def change_language(self, language):
         try:
-            self.load_language(lang)
+            with open('AppData/language/' + language + '.json', encoding='utf-8') as fp:
+                self.language = json.load(fp)
         except Exception as e:
-            QMessageBox.critical(self, 'Error', f'Failed to load language: {e}')
-            return
-        reply = QMessageBox.question(self, self.language_data['Title'],
-                                     self.language_data['Restart Info'],
-                                     QMessageBox.Yes | QMessageBox.No)
-        if reply == QMessageBox.Yes:
-            self.save_settings()
-            # 重启（这里可以用 QProcess 启动自身，简单起见提示用户手动重启）
-            QApplication.quit()
-            # 实际项目中可调用 os.execl(sys.executable, ...)
+            QMessageBox.critical(self, self.language['Title'], self.language['Language Error'].format(type=type(e).__name__,
+                                                                                                e=e, id=hex(id(e))))
+            raise e
         else:
-            # 更新 UI 文本（略复杂，可重新构建窗口或逐个更新）
-            pass
+            self.current_language = language
+            if QMessageBox.question(self, self.language['Title'], self.language['Restart Info']) == QMessageBox.Yes:
+                self.save_settings()
+                restart()
 
     def show_help(self):
         dlg = QMessageBox(self)
-        dlg.setWindowTitle('帮助')
+        dlg.setWindowTitle(self.language_data['Help Window Title'])
         dlg.setText(self.language_data['Help Text'])
         dlg.exec()
 
     def show_about(self):
         dlg = QMessageBox(self)
-        dlg.setWindowTitle('关于')
+        dlg.setWindowTitle(self.language_data['About'])
         dlg.setText(self.language_data['About Text'])
         dlg.exec()
 
@@ -250,7 +253,7 @@ class MainWindow(QMainWindow):
         )
         self.floating_window.setAttribute(Qt.WA_TranslucentBackground)
         self.floating_window.resize(50, 50)
-        # 添加图标
+        # Add icons
         icon_label = QLabel(self.floating_window)
         pixmap = QPixmap('AppData/icon.png').scaled(40, 40, Qt.KeepAspectRatio)
         icon_label.setPixmap(pixmap)
@@ -259,7 +262,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(icon_label)
         self.floating_window.hide()
 
-        # 绑定事件
+        # binding events
         self.floating_window.installEventFilter(self)
 
     def eventFilter(self, obj, event):
@@ -273,7 +276,7 @@ class MainWindow(QMainWindow):
         return super().eventFilter(obj, event)
 
     def _main_loop_step(self):
-        """每帧执行的操作"""
+        """Operations performed per frame"""
         self.check_cross_the_boundary()
         self.check_activate()
 
@@ -282,12 +285,13 @@ class MainWindow(QMainWindow):
             return
         if self.floating_window and self.floating_window.isVisible():
             return
+        if self._is_animate:
+            return
 
         x = self.x()
         y = self.y()
         w = self.width()
         screen_w = self.screen().size().width()
-        screen_h = self.screen().size().height()
 
         near_left = x < EDGE_POS_FAULT_TOLERANCE
         near_right = x > screen_w - w - EDGE_POS_FAULT_TOLERANCE
@@ -300,25 +304,24 @@ class MainWindow(QMainWindow):
             if self.cross_the_boundary_timer == 0.0:
                 self.cross_the_boundary_timer = time.time()
             elif time.time() - self.cross_the_boundary_timer >= EDGE_HIDDEN_DELAY_TIME:
-                # 隐藏主窗口，显示浮动窗口
-                self.hide()
                 if near_left:
-                    fx = EDGE_POS_FAULT_TOLERANCE
+                    fx = -self.floating_window.width() // 4
                 else:
                     fx = screen_w - EDGE_POS_FAULT_TOLERANCE - self.floating_window.width()
                 fy = y
                 self.floating_window.move(fx, fy)
-                self.floating_window.show()
-                # 动画效果（简化：直接用透明度变化）
-                self._play_hide_animation(near_left)
+                # Play hide animation
+                self._play_animation(near_left, 'hide')
+
 
     def check_activate(self, force=False):
         if not self.is_edge_hiding:
             return
         if force or (self.activate_timer != 0.0 and time.time() - self.activate_timer >= EDGE_HIDDEN_DELAY_TIME):
-            # 恢复主窗口
-            self.showNormal()
+            # Restore the main window
+            # self.showNormal()
             self.floating_window.hide()
+            self._play_animation(self.x() <= 15, 'show')
             self.activate_timer = 0.0
             self.cross_the_boundary_timer = 0.0
 
@@ -326,16 +329,46 @@ class MainWindow(QMainWindow):
         mx, my = pyg.position()
         wx, wy = self.x(), self.y()
         ww, wh = self.width(), self.height()
-        # 允许上方 80px 容差
+        # Allow 80px tolerance above the window
         if wx <= mx <= wx + ww and wy - 80 <= my <= wy + wh:
             self.cross_the_boundary_timer = 0.0
             return True
         return False
 
-    def _play_hide_animation(self, left):
-        # 简单的缩放动画（可用 QPropertyAnimation）
-        # 这里略过具体实现，保持功能即可
-        pass
+    def _play_animation(self, left, mode):
+        animate_window = QWidget(None)
+        animate_window.setWindowFlags(
+            Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
+        )
+        animate_window.setAttribute(Qt.WA_TranslucentBackground)
+        image = QLabel(animate_window)
+        image.setPixmap(QPixmap(f'AppData/{self.current_mode}.png').scaled(self.width(), self.height(), Qt.KeepAspectRatio))
+        image.show()
+        animate_window.show()
+        self.animation = QPropertyAnimation(animate_window, b'geometry')
+        self.animation.setDuration(1000)
+        origin_x, origin_y = self.x(), self.y()
+        origin_w, origin_h = self.width(), self.height()
+        if left:
+            start_rect = QRect(origin_x, origin_y, origin_w, origin_h)
+            end_rect = QRect(origin_x, origin_y, 35, 35)
+        else:
+            start_rect = QRect(origin_x, origin_y, origin_w, origin_h)
+            end_rect = QRect(origin_x + origin_w - 35, origin_y, 35, 35)
+        if mode == 'hide':
+            self.hide()
+        elif mode == 'show':
+            start_rect, end_rect = end_rect, start_rect
+        self.animation.setStartValue(start_rect)
+        self.animation.setEndValue(end_rect)
+        def _on_animation_finished():
+            nonlocal animate_window, self, mode
+            (self if mode == 'show' else self.floating_window).show()
+            self._is_animate = False
+            animate_window.destroy()
+        self.animation.finished.connect(_on_animation_finished)
+        self.animation.start()
+        self._is_animate = True
 
     def save_settings(self):
         data = {
@@ -353,15 +386,19 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    # 读取配置
-    with open('AppData/data.json', encoding='utf-8') as f:
-        data = json.load(f)
-    window = MainWindow(
-        is_deduplication_mode=data['Deduplication mode'],
-        is_edge_hiding_mode=data['Edge hiding mode'],
-        mode=data['Mode'],
-        language=data['Language']
-    )
-    window.show()
-    sys.exit(app.exec())
+    try:
+        app = QApplication(sys.argv)
+        # read config
+        with open('AppData/data.json', encoding='utf-8') as f:
+            data = json.load(f)
+        window = MainWindow(
+            is_deduplication_mode=data['Deduplication mode'],
+            is_edge_hiding_mode=data['Edge hiding mode'],
+            mode=data['Mode'],
+            language=data['Language']
+        )
+        window.show()
+        sys.exit(app.exec())
+    except Exception as e:
+        if DEBUG:
+            raise e
