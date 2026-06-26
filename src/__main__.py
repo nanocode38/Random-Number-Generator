@@ -1,3 +1,4 @@
+import signal
 import sys
 import json
 import csv
@@ -19,7 +20,8 @@ from constant import (
     ROOT_WINDOW_WIDTH,
     ROOT_WINDOW_HEIGHT
 )
-from tools import restart
+from tools import restart, sigint_handler
+from animation import Animation
 
 DEBUG = os.path.exists("DEBUG")
 
@@ -311,110 +313,24 @@ class MainWindow(QMainWindow):
                 fy = y
                 self.floating_window.move(fx, fy)
                 # Play hide animation
-                self._play_animation(near_left, 'hide')
+                animation = Animation(self, near_left, 'hide')
+                animation.build()
+                animation.play()
 
     def check_activate(self, force=False):
         if not self.is_edge_hiding:
             return
         if force or (self.activate_timer != 0.0 and time.time() - self.activate_timer >= EDGE_HIDDEN_DELAY_TIME):
             # Restore the main window
-            # self.showNormal()
             self.floating_window.hide()
-            self._play_animation(self.x() <= 15, 'show')
+            animation = Animation(self, self.x() <= 15, 'show')
+            animation.build()
+            animation.play()
             self.activate_timer = 0.0
             self.cross_the_boundary_timer = 0.0
 
     def _mouse_in_window(self):
         return self.frameGeometry().contains(QCursor.pos())
-
-    def _build_animation_window(self):
-        animate_window = QWidget(None)
-        animate_window.setWindowFlags(
-            Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
-        )
-        animate_window.setAttribute(Qt.WA_TranslucentBackground)
-        screenshot = self.grab()
-        image = QLabel(animate_window)
-        image.setPixmap(screenshot.scaled(
-            self.width(), self.height(),
-            Qt.KeepAspectRatio, Qt.SmoothTransformation
-        ))
-        image.show()
-        animate_window.show()
-        return animate_window
-
-    def _build_geometry_animation(self, window, left, mode):
-        geometry_animation = QPropertyAnimation(window, b'geometry')
-        geometry_animation.setDuration(1000)
-
-        origin_x, origin_y = self.x(), self.y()
-        origin_w, origin_h = self.width(), self.height()
-        if left:
-            start_rect = QRect(origin_x, origin_y, origin_w, origin_h)
-            end_rect = QRect(origin_x, origin_y, 35, 35)
-        else:
-            start_rect = QRect(origin_x, origin_y, origin_w, origin_h)
-            end_rect = QRect(origin_x + origin_w, origin_y, 35, 35)
-        if mode == 'hide':
-            self.hide()
-        elif mode == 'show':
-            start_rect, end_rect = end_rect, start_rect
-        geometry_animation.setStartValue(start_rect)
-        geometry_animation.setEndValue(end_rect)
-        return geometry_animation
-
-    @staticmethod
-    def _build_opacity_animation(window, mode):
-        opacity_animation = QPropertyAnimation(window, b'windowOpacity')
-        opacity_animation.setDuration(1000)
-        if mode == 'hide':
-            opacity_animation.setStartValue(0.9)
-            opacity_animation.setEndValue(0.0)
-        elif mode == 'show':
-            window.setWindowOpacity(0.0)
-            opacity_animation.setStartValue(0.0)
-            opacity_animation.setEndValue(0.9)
-        return opacity_animation
-
-    def _build_floating_window_animation(self, mode):
-        floating_window_animation = QPropertyAnimation(self.floating_window, b'windowOpacity')
-        floating_window_animation.setDuration(1000)
-        floating_window_animation.setStartValue(0.0 if mode == 'hide' else 0.9)
-        floating_window_animation.setEndValue(0.9 if mode == 'hide' else 0.0)
-        return floating_window_animation
-
-    def _build_animation_group(self, animate_window, geometry_animation, opacity_animation, mode):
-        # Parallel animation group
-        animation_group = QParallelAnimationGroup(self)
-        animation_group.addAnimation(geometry_animation)
-        animation_group.addAnimation(opacity_animation)
-        animation_group.addAnimation(self._build_floating_window_animation(mode))
-
-        # Connect animation finished signal
-        def _on_animation_finished():
-            nonlocal animate_window, self, mode
-            show_win = self if mode == 'show' else self.floating_window
-            hide_win = self.floating_window if mode == 'show' else self
-            show_win.show()
-            hide_win.hide()
-            self._is_animate = False
-            animate_window.destroy()
-        animation_group.finished.connect(_on_animation_finished)
-        return animation_group
-
-
-    def _play_animation(self, left, mode):
-        animate_window = self._build_animation_window()
-        geometry_animation = self._build_geometry_animation(animate_window, left, mode)
-        opacity_animation = self._build_opacity_animation(animate_window, mode)
-
-        # Floating Window Settings
-        self.floating_window.setWindowOpacity(0.0 if mode == 'hide' else 0.9)
-        self.floating_window.show()
-
-        # Start animation and set flag
-        self._build_animation_group(animate_window, geometry_animation, opacity_animation, mode).start()
-        self._is_animate = True
 
     def save_settings(self):
         data = {
@@ -437,6 +353,13 @@ if __name__ == '__main__':
         # read config
         with open('AppData/data.json', encoding='utf-8') as f:
             data = json.load(f)
+
+        if DEBUG:
+            signal.signal(signal.SIGINT, sigint_handler)  # Take over SIGINT
+            timer = QTimer()
+            timer.start(500)  # Run the interpreter every 500ms
+            timer.timeout.connect(lambda: None)  # Signal callback
+
         window = MainWindow(
             is_deduplication_mode=data['Deduplication mode'],
             is_edge_hiding_mode=data['Edge hiding mode'],

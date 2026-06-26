@@ -1,7 +1,8 @@
 import sys
 import platform
 import subprocess
-from tkinter import messagebox
+
+from PySide6.QtWidgets import QApplication, QMessageBox
 
 def restart():
     """Restart The Program"""
@@ -18,6 +19,10 @@ def restart():
         else:
             subprocess.Popen([program] + args)
     except Exception as e:
-        messagebox.showerror("Error", f"Restart failed: {e}")
+        QMessageBox.critical(None, "Error", f"Restart failed: {e}")
     finally:
         sys.exit()
+
+def sigint_handler(*args):
+    sys.stderr.write('\rReceive KeyboardInterrupt, exiting...\n')
+    QApplication.quit()
