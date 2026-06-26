@@ -327,8 +327,7 @@ class MainWindow(QMainWindow):
     def _mouse_in_window(self):
         return self.frameGeometry().contains(QCursor.pos())
 
-    def _play_animation(self, left, mode):
-        # Init animation window
+    def _build_animation_window(self):
         animate_window = QWidget(None)
         animate_window.setWindowFlags(
             Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
@@ -342,10 +341,11 @@ class MainWindow(QMainWindow):
         ))
         image.show()
         animate_window.show()
+        return animate_window
 
-        # Geometry animation
-        geo_animation = QPropertyAnimation(animate_window, b'geometry')
-        geo_animation.setDuration(1000)
+    def _build_geometry_animation(self, window, left, mode):
+        geometry_animation = QPropertyAnimation(window, b'geometry')
+        geometry_animation.setDuration(1000)
 
         origin_x, origin_y = self.x(), self.y()
         origin_w, origin_h = self.width(), self.height()
@@ -359,33 +359,36 @@ class MainWindow(QMainWindow):
             self.hide()
         elif mode == 'show':
             start_rect, end_rect = end_rect, start_rect
-        geo_animation.setStartValue(start_rect)
-        geo_animation.setEndValue(end_rect)
+        geometry_animation.setStartValue(start_rect)
+        geometry_animation.setEndValue(end_rect)
+        return geometry_animation
 
-        # Opacity animation
-        opacity_animation = QPropertyAnimation(animate_window, b'windowOpacity')
+    @staticmethod
+    def _build_opacity_animation(window, mode):
+        opacity_animation = QPropertyAnimation(window, b'windowOpacity')
         opacity_animation.setDuration(1000)
         if mode == 'hide':
             opacity_animation.setStartValue(0.9)
             opacity_animation.setEndValue(0.0)
         elif mode == 'show':
-            animate_window.setWindowOpacity(0.0)
+            window.setWindowOpacity(0.0)
             opacity_animation.setStartValue(0.0)
             opacity_animation.setEndValue(0.9)
+        return opacity_animation
 
-        # Floating Window Animation
-        self.floating_window.setWindowOpacity(0.0 if mode == 'hide' else 0.9)
-        self.floating_window.show()
+    def _build_floating_window_animation(self, mode):
         floating_window_animation = QPropertyAnimation(self.floating_window, b'windowOpacity')
         floating_window_animation.setDuration(1000)
         floating_window_animation.setStartValue(0.0 if mode == 'hide' else 0.9)
         floating_window_animation.setEndValue(0.9 if mode == 'hide' else 0.0)
+        return floating_window_animation
 
+    def _build_animation_group(self, animate_window, geometry_animation, opacity_animation, mode):
         # Parallel animation group
         animation_group = QParallelAnimationGroup(self)
-        animation_group.addAnimation(geo_animation)
+        animation_group.addAnimation(geometry_animation)
         animation_group.addAnimation(opacity_animation)
-        animation_group.addAnimation(floating_window_animation)
+        animation_group.addAnimation(self._build_floating_window_animation(mode))
 
         # Connect animation finished signal
         def _on_animation_finished():
@@ -397,9 +400,20 @@ class MainWindow(QMainWindow):
             self._is_animate = False
             animate_window.destroy()
         animation_group.finished.connect(_on_animation_finished)
+        return animation_group
+
+
+    def _play_animation(self, left, mode):
+        animate_window = self._build_animation_window()
+        geometry_animation = self._build_geometry_animation(animate_window, left, mode)
+        opacity_animation = self._build_opacity_animation(animate_window, mode)
+
+        # Floating Window Settings
+        self.floating_window.setWindowOpacity(0.0 if mode == 'hide' else 0.9)
+        self.floating_window.show()
 
         # Start animation and set flag
-        animation_group.start()
+        self._build_animation_group(animate_window, geometry_animation, opacity_animation, mode).start()
         self._is_animate = True
 
     def save_settings(self):
