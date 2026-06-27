@@ -1,32 +1,14 @@
 from __future__ import annotations
 
-import sys
-import json
-import csv
-import random
-import os
-import time
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from .__main__ import MainWindow
+    from . import MainWindow
 
 
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QLabel, QComboBox,
-    QCheckBox, QPushButton, QMessageBox,
-    QVBoxLayout, QHBoxLayout
-)
-from PySide6.QtCore import Qt, QTimer, QRect, QPropertyAnimation, QParallelAnimationGroup
-from PySide6.QtGui import QFont, QIcon, QPixmap, QAction, QMouseEvent, QCursor
+from PySide6.QtWidgets import QWidget, QLabel
+from PySide6.QtCore import Qt, QRect, QPropertyAnimation, QParallelAnimationGroup
 
-from constant import (
-    EDGE_POS_FAULT_TOLERANCE,
-    EDGE_HIDDEN_DELAY_TIME,
-    ROOT_WINDOW_WIDTH,
-    ROOT_WINDOW_HEIGHT
-)
-from tools import restart
 
 class Animation:
     def __init__(self, parent: MainWindow, is_left:bool, mode: str):
