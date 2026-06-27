@@ -17,3 +17,6 @@ __pycatch__/
 *.spec
 build/
 DEBUG
+desktop.ini
+Thumbs.db
+[Dd]esktop.ini
