@@ -3,19 +3,18 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from . import MainWindow
-
+    from . import Main, MainWindow
 
 from PySide6.QtWidgets import QWidget, QLabel
 from PySide6.QtCore import Qt, QRect, QPropertyAnimation, QParallelAnimationGroup
 
 
 class Animation:
-    def __init__(self, parent: MainWindow, is_left:bool, mode: str):
+    def __init__(self, parent: MainWindow, floating_window, is_left:bool, mode: str):
         self.parent = parent
         self.is_left = is_left
         self.mode = mode
-        self.floating_window = self.parent.floating_window
+        self.floating_window = floating_window
 
         # Declare variables
         self.animation_window: QWidget | None = None
@@ -105,6 +104,5 @@ class Animation:
         self.floating_window.setWindowOpacity(0.0 if self.mode == 'hide' else 0.9)
         self.floating_window.show()
 
+        self.parent._is_animate = True
         self.animation_group.start()
-        self.parent._is_animate = False
-
