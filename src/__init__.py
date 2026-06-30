@@ -208,7 +208,7 @@ class Main:
             timer.timeout.connect(lambda: None)  # Signal callback
 
         self.main_window.show()
-        self.save_settings()
+        QApplication.instance().aboutToQuit.connect(self.save_settings)
 
     def load_language(self, lang):
         with open(f'AppData/language/{lang}.json', encoding='utf-8') as f:
@@ -216,10 +216,13 @@ class Main:
 
     def on_class_changed(self, text):
         self.selected_class = text
-
+    
     def on_hide_mode_changed(self, state):
-        self.is_edge_hiding = (state == Qt.Checked)
+        self.is_edge_hiding = (Qt.CheckState(state) == Qt.Checked)
+        if self.is_edge_hiding and not self.floating_window:
+            self._setup_floating_window()
         self.main_window.setWindowFlag(Qt.WindowStaysOnTopHint, self.is_edge_hiding)
+        self.main_window.show()
         if not self.is_edge_hiding:
             self.cross_the_boundary_timer = 0.0
             if self.floating_window:
@@ -381,7 +384,6 @@ class Main:
                 if lang_name == self.current_language:
                     action.setChecked(True)
                 self.main_window.lang_menu.addAction(action)
-                # self.lang_actions.append(action)
 
 
 
