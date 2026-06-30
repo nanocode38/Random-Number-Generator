@@ -3,7 +3,7 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "RandomStudentNumverGenerator"
+name = "RandomStudentNumberGenerator"
 dynamic = ["version"]  # Dynamically fetching versions from code
 description = "A random student number generator with premium and basic versions (all free)"
 readme = "README.md"

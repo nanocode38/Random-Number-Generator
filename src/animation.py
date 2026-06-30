@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from . import Main, MainWindow
+    from . import MainWindow
 
 from PySide6.QtWidgets import QWidget, QLabel
 from PySide6.QtCore import Qt, QRect, QPropertyAnimation, QParallelAnimationGroup
@@ -74,7 +74,7 @@ class Animation:
         self.floating_window_animation.setStartValue(0.0 if mode == 'hide' else 0.9)
         self.floating_window_animation.setEndValue(0.9 if mode == 'hide' else 0.0)
 
-    def _build_animation_group(self, animate_window, geometry_animation, opacity_animation, mode):
+    def _build_animation_group(self, geometry_animation, opacity_animation, mode):
         # Parallel animation group
         self.animation_group = QParallelAnimationGroup(self.parent)
         self.animation_group.addAnimation(geometry_animation)
@@ -84,20 +84,19 @@ class Animation:
 
         # Connect animation finished signal
         def _on_animation_finished():
-            nonlocal self
             show_win = self.parent if self.mode == 'show' else self.floating_window
             hide_win = self.floating_window if self.mode == 'show' else self.parent
             show_win.show()
             hide_win.hide()
             self.parent._is_animate = False
-            self.animation_window.destroy()
+            self.animation_window.deleteLater()
         self.animation_group.finished.connect(_on_animation_finished)
 
     def build(self):
         self._build_animation_window()
         self._build_geometry_animation(self.is_left)
         self._build_opacity_animation()
-        self._build_animation_group(self.animation_window, self.geometry_animation, self.opacity_animation, self.mode)
+        self._build_animation_group(self.geometry_animation, self.opacity_animation, self.mode)
 
     def play(self):
         # Floating Window Settings

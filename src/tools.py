@@ -30,7 +30,7 @@ def restart():
     except Exception as e:
         QMessageBox.critical(None, "Error", f"Restart failed: {e}")
     finally:
-        sys.exit()
+        QApplication.quit()
 
 def sigint_handler(*args):
     sys.stderr.write('\rReceive KeyboardInterrupt, exiting...\n')

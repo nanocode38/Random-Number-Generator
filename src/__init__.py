@@ -5,168 +5,30 @@ import csv
 import random
 import os
 import time
-from typing import Optional
-from PySide6.QtWidgets import (
-    QApplication, QMainWindow, QWidget, QLabel, QComboBox,
-    QCheckBox, QPushButton, QMessageBox,
-    QVBoxLayout, QHBoxLayout
-)
-from PySide6.QtCore import Qt, QTimer, QRect, QPropertyAnimation, QParallelAnimationGroup, Signal, QEvent
-from PySide6.QtGui import QFont, QIcon, QPixmap, QAction, QMouseEvent, QCursor
+
+from PySide6.QtWidgets import QApplication, QLabel, QMessageBox, QVBoxLayout
+from PySide6.QtCore import Qt, QTimer
+from PySide6.QtGui import QPixmap, QAction, QCursor
 
 from .constant import (
     EDGE_POS_FAULT_TOLERANCE,
     EDGE_HIDDEN_DELAY_TIME,
-    ROOT_WINDOW_WIDTH,
-    ROOT_WINDOW_HEIGHT,
     DEBUG
 )
 from .tools import restart, sigint_handler, load_settings, write_settings, load_language
 from .animation import Animation
+from .ui import MainWindow, FloatingWindow
 
 
 __version__ = '1.1.0'
 __author__ = 'nanocode38'
 
-class MainWindow(QMainWindow):
-    def __init__(self, language_data, mode):
-        super().__init__()
+# Sentinel value for deduplication tracking
+_DEDUPE_SENTINEL = -10086
 
-        self.language_data = language_data
-        self.current_mode = mode
-
-        # Window basic settings
-        self.setWindowTitle(self.language_data['Title'])
-        self.setWindowOpacity(0.9)
-        if DEBUG:
-            self.resize(ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
-        else:
-            self.setFixedSize(ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
-        self.setWindowIcon(QIcon('AppData/icon.ico'))
-
-        # Create controls
-        self._create_widgets()
-        self._create_menu()
-
-    def _create_widgets(self):
-        central = QWidget()
-        self.setCentralWidget(central)
-        layout = QVBoxLayout(central)
-
-        # Top area: class selection + checkbox
-        top_layout = QHBoxLayout()
-        self.class_label = QLabel(self.language_data['Class'] + ': ')
-        self.class_combo = QComboBox()
-        self.class_combo.setEditable(False)
-
-
-        self.dedup_check = QCheckBox(self.language_data['Deduplication'])
-
-        self.hide_check = QCheckBox(self.language_data['Hide'])
-
-        top_layout.addWidget(self.class_label)
-        top_layout.addWidget(self.class_combo)
-        top_layout.addWidget(self.dedup_check)
-        top_layout.addWidget(self.hide_check)
-        layout.addLayout(top_layout)
-
-        # Middle area: display number and name
-        middle_layout = QHBoxLayout()
-        self.num_label = QLabel('')
-        self.num_label.setFont(QFont('Times', 48, QFont.Bold))
-        self.num_label.setAlignment(Qt.AlignCenter)
-        self.num_label.setStyleSheet('color: blue;')
-
-        self.name_label = QLabel('')
-        self.name_label.setFont(QFont('Times', 32, QFont.Bold))
-        self.name_label.setAlignment(Qt.AlignCenter)
-        self.name_label.setStyleSheet('color: blue;')
-
-        middle_layout.addWidget(self.num_label)
-        middle_layout.addWidget(self.name_label)
-        layout.addLayout(middle_layout)
-
-        # Bottom buttons
-        self.random_btn = QPushButton(self.language_data['Button Text'])
-        self.random_btn.setFont(QFont('Times', 28, QFont.Bold))
-        layout.addWidget(self.random_btn, alignment=Qt.AlignBottom)
-
-    def _create_menu(self):
-        menubar = self.menuBar()
-
-        # About menu
-        about_menu = menubar.addMenu(self.language_data['About'])
-        help_action = QAction(self.language_data['Help'], self)
-        help_action.triggered.connect(self.show_help)
-        about_action = QAction(self.language_data['About'], self)
-        about_action.triggered.connect(self.show_about)
-        about_menu.addAction(help_action)
-        about_menu.addAction(about_action)
-
-        # Mode menu
-        mode_menu = menubar.addMenu(self.language_data['Mode'])
-        light_action = QAction(self.language_data['Light'], self)
-        light_action.triggered.connect(lambda: self.change_mode('Light'))
-        dark_action = QAction(self.language_data['Dark'], self)
-        dark_action.triggered.connect(lambda: self.change_mode('Dark'))
-        mode_menu.addAction(light_action)
-        mode_menu.addAction(dark_action)
-
-        # Language menu (radio buttons)
-        self.lang_menu = menubar.addMenu(self.language_data['Language'])
-        # self.lang_actions = []
-
-    def change_mode(self, mode):
-        self.current_mode = mode
-        self.apply_theme(mode)
-
-    def apply_theme(self, mode):
-        if mode == 'Dark':
-            self.setStyleSheet('''
-                QMainWindow { background-color: #222; color: white; }
-                QLabel { color: white; }
-                QPushButton { background-color: #555; color: white; }
-            ''')
-        else:
-            self.setStyleSheet('''
-                QMainWindow { background-color: #fff; color: black; }
-                QLabel { color: black; }
-                QPushButton { background-color: #e0e0e0; color: black; }
-            ''')
-
-    def show_help(self):
-        dlg = QMessageBox(self)
-        dlg.setWindowTitle(self.language_data['Help Window Title'])
-        dlg.setText(self.language_data['Help Text'])
-        dlg.exec()
-
-    def show_about(self):
-        dlg = QMessageBox(self)
-        dlg.setWindowTitle(self.language_data['About'])
-        dlg.setText(self.language_data['About Text'])
-        dlg.exec()
-
-class FloatingWindow(QWidget):
-    enter = Signal()
-    leave = Signal()
-    mouse_button_press = Signal()
-
-    def enterEvent(self, event):
-        self.enter.emit()
-        super().enterEvent(event)
-
-    def leaveEvent(self, event):
-        self.leave.emit()
-        super().leaveEvent(event)
-
-    def mousePressEvent(self, event):
-        self.mouse_button_press.emit()
-        super().mousePressEvent(event)
 
 class Main:
     def __init__(self, is_deduplication_mode, is_edge_hiding_mode, mode, language):
-        super().__init__()
-
         self.is_deduplication = is_deduplication_mode
         self.is_edge_hiding = is_edge_hiding_mode
         self.current_mode = mode
@@ -174,7 +36,7 @@ class Main:
         self.language_data = load_language(language)
 
         # state variables
-        self.number_list = {-10086}
+        self.number_list = {_DEDUPE_SENTINEL}
         self.selected_class = ''
         self.class_names = []
 
@@ -210,10 +72,6 @@ class Main:
         self.main_window.show()
         QApplication.instance().aboutToQuit.connect(self.save_settings)
 
-    def load_language(self, lang):
-        with open(f'AppData/language/{lang}.json', encoding='utf-8') as f:
-            self.language_data = json.load(f)
-
     def on_class_changed(self, text):
         self.selected_class = text
     
@@ -243,10 +101,10 @@ class Main:
 
         if self.main_window.dedup_check.isChecked():
             # If everyone has been drawn
-            if len(self.number_list) - 1 >= n:  # except -10086
+            if len(self.number_list) - 1 >= n:  # except sentinel
                 QMessageBox.information(self.main_window, self.language_data['Title'],
                                         self.language_data['Message'])
-                self.number_list = {-10086}
+                self.number_list = {_DEDUPE_SENTINEL}
                 return
             idx = random.randint(0, n - 1)
             while idx in self.number_list:
@@ -261,14 +119,14 @@ class Main:
     def change_language(self, language):
         try:
             with open('AppData/language/' + language + '.json', encoding='utf-8') as fp:
-                self.language = json.load(fp)
+                self.language_data = json.load(fp)
         except Exception as e:
-            QMessageBox.critical(self.main_window, self.language['Title'], self.language['Language Error'].format(type=type(e).__name__,
+            QMessageBox.critical(self.main_window, self.language_data['Title'], self.language_data['Language Error'].format(type=type(e).__name__,
                                                                                                 e=e, id=hex(id(e))))
             raise e
         else:
             self.current_language = language
-            if QMessageBox.question(self.main_window, self.language['Title'], self.language['Restart Info']) == QMessageBox.Yes:
+            if QMessageBox.question(self.main_window, self.language_data['Title'], self.language_data['Restart Info']) == QMessageBox.Yes:
                 self.save_settings()
                 restart()
 
@@ -290,11 +148,9 @@ class Main:
 
         # binding events
         def _on_enter():
-            nonlocal self
             self.activate_timer = time.time()
 
         def _on_leave():
-            nonlocal self
             self.activate_timer = 0.0
 
         self.floating_window.enter.connect(_on_enter)
@@ -317,12 +173,13 @@ class Main:
         x = self.main_window.x()
         y = self.main_window.y()
         w = self.main_window.width()
-        screen_w = self.main_window.screen().size().width()
+        screen = self.main_window.screen()
+        screen_w = screen.size().width() if screen else 1920
 
         near_left = x < EDGE_POS_FAULT_TOLERANCE
         near_right = x > screen_w - w - EDGE_POS_FAULT_TOLERANCE
 
-        if not near_left and not near_right  or self._mouse_in_window():
+        if (not near_left and not near_right) or self._mouse_in_window():
             self.cross_the_boundary_timer = 0.0
             return
 
@@ -388,7 +245,6 @@ class Main:
 
 
 def main():
-    global DEBUG
     if DEBUG:
         print("DEBUG mode on", file=sys.stderr)
     try:
@@ -399,6 +255,8 @@ def main():
     except Exception as e:
         if DEBUG:
             raise e
+        else:
+            QMessageBox.critical(None, "Error", str(e))
 
 
 if __name__ == '__main__':
