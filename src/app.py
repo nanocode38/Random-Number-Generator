@@ -37,7 +37,7 @@ class Main:
         self.language_data = load_language(language)
 
         # state variables
-        self.number_list = {_DEDUPE_SENTINEL}
+        self.number_list = set()
         self.selected_class = ''
         self.class_names = []
 
@@ -103,10 +103,10 @@ class Main:
 
         if self.main_window.dedup_check.isChecked():
             # If everyone has been drawn
-            if len(self.number_list) - 1 >= n:  # except sentinel
+            if len(self.number_list) >= n:
                 QMessageBox.information(self.main_window, self.language_data['Title'],
                                         self.language_data['Message'])
-                self.number_list = {_DEDUPE_SENTINEL}
+                self.number_list.clear()
                 return
             idx = random.randint(0, n - 1)
             while idx in self.number_list:
