@@ -6,8 +6,7 @@ import json
 
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from . import LANGUAGE_DIR
-from .constant import APPDATA_DIR
+from .constant import APPDATA_DIR, LANGUAGE_DIR
 
 def restart():
     """Restart The Program"""
