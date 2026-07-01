@@ -8,6 +8,8 @@ if TYPE_CHECKING:
 from PySide6.QtWidgets import QWidget, QLabel
 from PySide6.QtCore import Qt, QRect, QPropertyAnimation, QParallelAnimationGroup
 
+from .constant import WINDOW_OPACITY
+
 
 class Animation:
     def __init__(self, parent: MainWindow, floating_window, is_left:bool, mode: str):
@@ -61,18 +63,18 @@ class Animation:
         self.opacity_animation = QPropertyAnimation(self.animation_window, b'windowOpacity')
         self.opacity_animation.setDuration(1000)
         if self.mode == 'hide':
-            self.opacity_animation.setStartValue(0.9)
+            self.opacity_animation.setStartValue(WINDOW_OPACITY)
             self.opacity_animation.setEndValue(0.0)
         elif self.mode == 'show':
             self.animation_window.setWindowOpacity(0.0)
             self.opacity_animation.setStartValue(0.0)
-            self.opacity_animation.setEndValue(0.9)
+            self.opacity_animation.setEndValue(WINDOW_OPACITY)
 
     def _build_floating_window_animation(self, mode):
         self.floating_window_animation = QPropertyAnimation(self.floating_window, b'windowOpacity')
         self.floating_window_animation.setDuration(1000)
-        self.floating_window_animation.setStartValue(0.0 if mode == 'hide' else 0.9)
-        self.floating_window_animation.setEndValue(0.9 if mode == 'hide' else 0.0)
+        self.floating_window_animation.setStartValue(0.0 if mode == 'hide' else WINDOW_OPACITY)
+        self.floating_window_animation.setEndValue(WINDOW_OPACITY if mode == 'hide' else 0.0)
 
     def _build_animation_group(self, geometry_animation, opacity_animation, mode):
         # Parallel animation group
@@ -100,7 +102,7 @@ class Animation:
 
     def play(self):
         # Floating Window Settings
-        self.floating_window.setWindowOpacity(0.0 if self.mode == 'hide' else 0.9)
+        self.floating_window.setWindowOpacity(0.0 if self.mode == 'hide' else WINDOW_OPACITY)
         self.floating_window.show()
 
         self.parent._is_animate = True

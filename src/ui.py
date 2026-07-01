@@ -10,7 +10,8 @@ from .constant import (
     ROOT_WINDOW_WIDTH,
     ROOT_WINDOW_HEIGHT,
     DEBUG,
-    APPDATA_DIR
+    APPDATA_DIR,
+    WINDOW_OPACITY
 
 )
 
@@ -28,7 +29,7 @@ class MainWindow(QMainWindow):
 
         # Window basic settings
         self.setWindowTitle(self.language_data['Title'])
-        self.setWindowOpacity(0.9)
+        self.setWindowOpacity(WINDOW_OPACITY)
         if DEBUG:
             self.resize(ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
         else:
