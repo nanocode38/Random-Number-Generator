@@ -139,16 +139,16 @@ class MainWindow(QMainWindow):
         dlg.exec()
 
 class FloatingWindow(QWidget):
-    enter = Signal()
-    leave = Signal()
+    entered = Signal()
+    exited = Signal()
     mouse_button_press = Signal()
 
     def enterEvent(self, event):
-        self.enter.emit()
+        self.entered.emit()
         super().enterEvent(event)
 
     def leaveEvent(self, event):
-        self.leave.emit()
+        self.exited.emit()
         super().leaveEvent(event)
 
     def mousePressEvent(self, event):

@@ -1,3 +1,5 @@
+from __future__ import annotations # Compatible with Python3.9
+
 import signal
 import sys
 import json
@@ -162,8 +164,8 @@ class Main:
         def _on_leave():
             self.activate_timer = 0.0
 
-        self.floating_window.enter.connect(_on_enter)
-        self.floating_window.leave.connect(_on_leave)
+        self.floating_window.entered.connect(_on_enter)
+        self.floating_window.exited.connect(_on_leave)
         self.floating_window.mouse_button_press.connect(lambda: self.check_activate(force=True))
 
     def _main_loop_step(self):
