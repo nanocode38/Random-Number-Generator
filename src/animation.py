@@ -6,13 +6,18 @@ if TYPE_CHECKING:
     from . import MainWindow
 
 from PySide6.QtWidgets import QWidget, QLabel
-from PySide6.QtCore import Qt, QRect, QPropertyAnimation, QParallelAnimationGroup
+from PySide6.QtCore import Qt, QRect, QPropertyAnimation, QParallelAnimationGroup, QObject, Signal
 
 from .constant import WINDOW_OPACITY
 
 
-class Animation:
+class Animation(QObject):
+    started = Signal()
+    finished = Signal()
+
     def __init__(self, parent: MainWindow, floating_window, is_left:bool, mode: str):
+        super().__init__()
+
         self.parent = parent
         self.is_left = is_left
         self.mode = mode
@@ -90,7 +95,7 @@ class Animation:
             hide_win = self.floating_window if self.mode == 'show' else self.parent
             show_win.show()
             hide_win.hide()
-            self.parent._is_animate = False
+            self.finished.emit()
             self.animation_window.deleteLater()
         self.animation_group.finished.connect(_on_animation_finished)
 
@@ -105,5 +110,5 @@ class Animation:
         self.floating_window.setWindowOpacity(0.0 if self.mode == 'hide' else WINDOW_OPACITY)
         self.floating_window.show()
 
-        self.parent._is_animate = True
+        self.started.emit()
         self.animation_group.start()

@@ -200,6 +200,8 @@ class Main:
                 self.floating_window.move(fx, fy)
                 # Play hide animation
                 animation = Animation(self.main_window, self.floating_window, near_left, 'hide')
+                animation.started.connect(lambda: setattr(self, '_is_animate', True))
+                animation.finished.connect(lambda: setattr(self, '_is_animate', False))
                 animation.build()
                 animation.play()
 
@@ -210,6 +212,8 @@ class Main:
             # Restore the main window
             self.floating_window.hide()
             animation = Animation(self.main_window, self.floating_window, self.main_window.x() <= 15, 'show')
+            animation.started.connect(lambda: setattr(self, '_is_animate', True))
+            animation.finished.connect(lambda: setattr(self, '_is_animate', False))
             animation.build()
             animation.play()
             self.activate_timer = 0.0
