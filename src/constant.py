@@ -17,3 +17,7 @@ EDGE_POS_FAULT_TOLERANCE = 5
 ROOT_WINDOW_WIDTH = 400
 ROOT_WINDOW_HEIGHT = 500
 DEBUG = os.path.isfile("DEBUG")
+
+# Animation mode identifiers
+MODE_HIDE = 'hide'
+MODE_SHOW = 'show'

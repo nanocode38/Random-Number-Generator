@@ -16,13 +16,15 @@ Features
 Package Structure
 -----------------
 src/
-    __init__.py   Package metadata (version, author).
-    __main__.py   Entry point for ``python -m src``.
-    app.py        Application core logic (Main class, main function).
-    ui.py         GUI components (MainWindow, FloatingWindow).
-    animation.py  Window show/hide animations.
-    tools.py      Utility functions (restart, settings I/O, signal handler).
-    constant.py   Path definitions and application-wide constants.
+    __init__.py    Package metadata (version, author).
+    __main__.py    Entry point for ``python -m src``.
+    app.py         Lightweight coordinator (Main class, main function).
+    ui.py          GUI components (MainWindow, FloatingWindow).
+    picker.py      Random student selection logic (StudentPicker).
+    edge_hider.py  Edge-hiding behaviour (EdgeHider).
+    animation.py   Window show/hide animations (Animation).
+    tools.py       Utility functions (restart, settings I/O, signal handler).
+    constant.py    Path definitions and application-wide constants.
 
 Usage
 -----

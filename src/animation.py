@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 from PySide6.QtWidgets import QWidget, QLabel
 from PySide6.QtCore import Qt, QRect, QPropertyAnimation, QParallelAnimationGroup, QObject, Signal
 
-from .constant import WINDOW_OPACITY
+from .constant import WINDOW_OPACITY, MODE_HIDE, MODE_SHOW
 
 
 class Animation(QObject):
@@ -57,7 +57,6 @@ class Animation(QObject):
         else:
             start_rect = QRect(origin_x, origin_y, origin_w, origin_h)
             end_rect = QRect(origin_x + origin_w, origin_y, 35, 35)
-        from .app import MODE_HIDE, MODE_SHOW
         if self.mode == MODE_HIDE:
             self.parent.hide()
         elif self.mode == MODE_SHOW:
@@ -68,7 +67,6 @@ class Animation(QObject):
     def _build_opacity_animation(self):
         self.opacity_animation = QPropertyAnimation(self.animation_window, b'windowOpacity')
         self.opacity_animation.setDuration(1000)
-        from .app import MODE_HIDE, MODE_SHOW
         if self.mode == MODE_HIDE:
             self.opacity_animation.setStartValue(WINDOW_OPACITY)
             self.opacity_animation.setEndValue(0.0)
@@ -80,7 +78,6 @@ class Animation(QObject):
     def _build_floating_window_animation(self, mode):
         self.floating_window_animation = QPropertyAnimation(self.floating_window, b'windowOpacity')
         self.floating_window_animation.setDuration(1000)
-        from .app import MODE_HIDE
         self.floating_window_animation.setStartValue(0.0 if mode == MODE_HIDE else WINDOW_OPACITY)
         self.floating_window_animation.setEndValue(WINDOW_OPACITY if mode == MODE_HIDE else 0.0)
 
@@ -94,7 +91,6 @@ class Animation(QObject):
 
         # Connect animation finished signal
         def _on_animation_finished():
-            from .app import MODE_SHOW
             show_win = self.parent if self.mode == MODE_SHOW else self.floating_window
             hide_win = self.floating_window if self.mode == MODE_SHOW else self.parent
             show_win.show()
@@ -111,7 +107,6 @@ class Animation(QObject):
 
     def play(self):
         # Floating Window Settings
-        from .app import MODE_HIDE
         self.floating_window.setWindowOpacity(0.0 if self.mode == MODE_HIDE else WINDOW_OPACITY)
         self.floating_window.show()
 
