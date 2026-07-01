@@ -189,7 +189,7 @@ wheels = [
 ]
 
 [[package]]
-name = "randomstudentnumvergenerator"
+name = "randomstudentnumbergenerator"
 source = { editable = "." }
 dependencies = [
     { name = "pyside6" },

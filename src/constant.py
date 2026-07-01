@@ -1,4 +1,14 @@
-import os.path
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+os.chdir(BASE_DIR)
+
+APPDATA_DIR = BASE_DIR / 'AppData'
+CLASSES_DIR = BASE_DIR / 'Classes'
+DATA_FILE = APPDATA_DIR / 'data.json'
+LANGUAGE_DIR = APPDATA_DIR / 'language'
+
 
 # Constant
 EDGE_HIDDEN_DELAY_TIME = 1

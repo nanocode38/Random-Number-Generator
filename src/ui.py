@@ -9,7 +9,9 @@ from PySide6.QtGui import QFont, QIcon, QAction
 from .constant import (
     ROOT_WINDOW_WIDTH,
     ROOT_WINDOW_HEIGHT,
-    DEBUG
+    DEBUG,
+    APPDATA_DIR
+
 )
 
 __all__ = [
@@ -31,7 +33,7 @@ class MainWindow(QMainWindow):
             self.resize(ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
         else:
             self.setFixedSize(ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
-        self.setWindowIcon(QIcon('AppData/icon.ico'))
+        self.setWindowIcon(QIcon(str(APPDATA_DIR / 'icon.ico')))
 
         # Create controls
         self._create_widgets()

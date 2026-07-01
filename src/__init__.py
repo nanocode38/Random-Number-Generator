@@ -13,7 +13,9 @@ from PySide6.QtGui import QPixmap, QAction, QCursor
 from .constant import (
     EDGE_POS_FAULT_TOLERANCE,
     EDGE_HIDDEN_DELAY_TIME,
-    DEBUG
+    DEBUG,
+    APPDATA_DIR,
+    CLASSES_DIR, LANGUAGE_DIR,
 )
 from .tools import restart, sigint_handler, load_settings, write_settings, load_language
 from .animation import Animation
@@ -88,7 +90,7 @@ class Main:
 
     def make_random(self):
         cls = self.selected_class or 'example'
-        filepath = f'Classes/{cls}.csv'
+        filepath = CLASSES_DIR / f'{cls}.csv'
         if not os.path.exists(filepath):
             QMessageBox.warning(self.main_window, self.language_data["Class file error title"], f'{self.language_data["Class file error"]} {filepath}')
             return
@@ -118,7 +120,8 @@ class Main:
 
     def change_language(self, language):
         try:
-            with open('AppData/language/' + language + '.json', encoding='utf-8') as fp:
+            language_file = LANGUAGE_DIR / f'{language}.json'
+            with open(language_file, encoding='utf-8') as fp:
                 self.language_data = json.load(fp)
         except Exception as e:
             QMessageBox.critical(self.main_window, self.language_data['Title'], self.language_data['Language Error'].format(type=type(e).__name__,
@@ -139,7 +142,7 @@ class Main:
         self.floating_window.resize(50, 50)
         # Add icons
         icon_label = QLabel(self.floating_window)
-        pixmap = QPixmap('AppData/icon.png').scaled(40, 40, Qt.KeepAspectRatio)
+        pixmap = QPixmap(str(APPDATA_DIR / 'icon.png')).scaled(40, 40, Qt.KeepAspectRatio)
         icon_label.setPixmap(pixmap)
         icon_label.setAlignment(Qt.AlignCenter)
         layout = QVBoxLayout(self.floating_window)
@@ -223,7 +226,7 @@ class Main:
 
     def _set_widgets_state(self):
         # Load class list
-        for file in os.listdir('Classes/'):
+        for file in os.listdir(CLASSES_DIR):
             if file.endswith('.csv'):
                 self.class_names.append(file.replace('.csv', ''))
 
@@ -233,7 +236,7 @@ class Main:
         self.main_window.hide_check.setChecked(self.is_edge_hiding)
         self.main_window.hide_check.stateChanged.connect(self.on_hide_mode_changed)
         self.main_window.random_btn.clicked.connect(self.make_random)
-        for lang_file in os.listdir('AppData/language'):
+        for lang_file in os.listdir(LANGUAGE_DIR):
             if lang_file.endswith('.json'):
                 lang_name = lang_file[:-5]
                 action = QAction(lang_name, self.main_window, checkable=True)

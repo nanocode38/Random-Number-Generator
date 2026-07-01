@@ -6,6 +6,9 @@ import json
 
 from PySide6.QtWidgets import QApplication, QMessageBox
 
+from . import LANGUAGE_DIR
+from .constant import APPDATA_DIR
+
 def restart():
     """Restart The Program"""
     program = sys.executable
@@ -37,11 +40,11 @@ def sigint_handler(*args):
     QApplication.quit()
 
 def load_settings():
-    with open('AppData/data.json', encoding='utf-8') as f:
+    with open(APPDATA_DIR / 'data.json', encoding='utf-8') as f:
         return json.load(f)
 
 def write_settings(is_deduplication_mode, is_edge_hiding_mode, mode, language):
-    with open('AppData/data.json', 'w', encoding='utf-8') as f:
+    with open(APPDATA_DIR / 'data.json', 'w', encoding='utf-8') as f:
         json.dump({
             'Deduplication mode': is_deduplication_mode,
             'Edge hiding mode': is_edge_hiding_mode,
@@ -50,5 +53,5 @@ def write_settings(is_deduplication_mode, is_edge_hiding_mode, mode, language):
         }, f)
 
 def load_language(lang):
-    with open(f'AppData/language/{lang}.json', encoding='utf-8') as f:
+    with open(LANGUAGE_DIR / f'{lang}.json', encoding='utf-8') as f:
         return json.load(f)
