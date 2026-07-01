@@ -17,3 +17,10 @@ __pycatch__/
 *.spec
 build/
 DEBUG
+
+# Windows specific files
+[Dd]esktop.ini
+[Tt]humbs.db
+*.url
+$RECYCLE.BIN/
+System Volume Information/
