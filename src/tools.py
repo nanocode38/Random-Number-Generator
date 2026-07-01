@@ -6,7 +6,15 @@ import json
 
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from .constant import APPDATA_DIR, LANGUAGE_DIR
+from .constant import APPDATA_DIR, LANGUAGE_DIR, DATA_FILE
+
+# Default settings used when data.json is missing or corrupted
+_DEFAULT_SETTINGS = {
+    'Deduplication mode': False,
+    'Edge hiding mode': False,
+    'Language': 'English',
+    'Mode': 'Light',
+}
 
 def restart():
     """Restart The Program"""
@@ -39,11 +47,16 @@ def sigint_handler(*args):
     QApplication.quit()
 
 def load_settings():
-    with open(APPDATA_DIR / 'data.json', encoding='utf-8') as f:
-        return json.load(f)
+    try:
+        with open(DATA_FILE, encoding='utf-8') as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        sys.stderr.write(f'Warning: failed to load settings ({e}), using defaults\n')
+        write_settings(**_DEFAULT_SETTINGS)
+        return dict(_DEFAULT_SETTINGS)
 
 def write_settings(is_deduplication_mode, is_edge_hiding_mode, mode, language):
-    with open(APPDATA_DIR / 'data.json', 'w', encoding='utf-8') as f:
+    with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump({
             'Deduplication mode': is_deduplication_mode,
             'Edge hiding mode': is_edge_hiding_mode,

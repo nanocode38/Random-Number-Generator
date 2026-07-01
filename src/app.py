@@ -24,6 +24,10 @@ from .ui import MainWindow, FloatingWindow
 __version__ = '1.1.0'
 __author__ = 'nanocode38'
 
+# Animation mode identifiers
+MODE_HIDE = 'hide'
+MODE_SHOW = 'show'
+
 # Sentinel value for deduplication tracking
 _DEDUPE_SENTINEL = -10086
 
@@ -199,7 +203,7 @@ class Main:
                 fy = y
                 self.floating_window.move(fx, fy)
                 # Play hide animation
-                animation = Animation(self.main_window, self.floating_window, near_left, 'hide')
+                animation = Animation(self.main_window, self.floating_window, near_left, MODE_HIDE)
                 animation.started.connect(lambda: setattr(self, '_is_animate', True))
                 animation.finished.connect(lambda: setattr(self, '_is_animate', False))
                 animation.build()
@@ -211,7 +215,7 @@ class Main:
         if force or (self.activate_timer != 0.0 and time.time() - self.activate_timer >= EDGE_HIDDEN_DELAY_TIME):
             # Restore the main window
             self.floating_window.hide()
-            animation = Animation(self.main_window, self.floating_window, self.main_window.x() <= 15, 'show')
+            animation = Animation(self.main_window, self.floating_window, self.main_window.x() <= 15, MODE_SHOW)
             animation.started.connect(lambda: setattr(self, '_is_animate', True))
             animation.finished.connect(lambda: setattr(self, '_is_animate', False))
             animation.build()
