@@ -3,11 +3,11 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "RandomStudentNumverGenerator"
+name = "RandomStudentNumberGenerator"
 dynamic = ["version"]  # Dynamically fetching versions from code
 description = "A random student number generator with premium and basic versions (all free)"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 authors = [{ name = "nanocode38", email = "nanocode38@88.com" }]
 license = { text = "MIT License" }
 classifiers = [
@@ -15,7 +15,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Natural Language :: Chinese (Simplified)",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -24,14 +23,9 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
 ]
 dependencies = [
-    "pyautogui>=0.9.54",
     "pyside6>=6.11.1",
 ]
 urls = { repository = "https://github.com/nanocode38/Random-Number-Generator.git" }
-
-# Development dependency
-[project.optional-dependencies]
-dev = ["black", "autoflake", "isort", "setuptools", "wheel"]
 
 [tool.setuptools.packages.find]
 where = ["."]
@@ -47,7 +41,7 @@ remove_unused_imports = true
 remove_unused_variables = true
 
 [dependency-groups]
-dev = []
+dev = ["black", "autoflake", "isort", "setuptools", "wheel"]
 
 [tool.setuptools.dynamic]
 version = {attr = "src.__version__"}
