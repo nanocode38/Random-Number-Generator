@@ -4,14 +4,14 @@ from PySide6.QtWidgets import (
     QVBoxLayout, QHBoxLayout
 )
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont, QIcon, QAction
+from PySide6.QtGui import QFont, QFontMetrics, QIcon, QAction
 
 from .constant import (
     ROOT_WINDOW_WIDTH,
     ROOT_WINDOW_HEIGHT,
     DEBUG,
     APPDATA_DIR,
-    WINDOW_OPACITY
+    WINDOW_OPACITY, STYLE_DIR
 
 )
 
@@ -64,15 +64,23 @@ class MainWindow(QMainWindow):
 
         # Middle area: display number and name
         middle_layout = QHBoxLayout()
+
+        # Calculate fixed width for 9 half-width characters
+        _label_font = QFont('Times', 24, QFont.Bold)
+        _fm = QFontMetrics(_label_font)
+        _box_width = _fm.averageCharWidth() * 9 + 28  # +24 padding + 4 border
+
         self.num_label = QLabel('')
-        self.num_label.setFont(QFont('Times', 48, QFont.Bold))
+        self.num_label.setObjectName('num_label')
+        self.num_label.setFont(_label_font)
         self.num_label.setAlignment(Qt.AlignCenter)
-        self.num_label.setStyleSheet('color: blue;')
+        self.num_label.setFixedWidth(_box_width)
 
         self.name_label = QLabel('')
-        self.name_label.setFont(QFont('Times', 32, QFont.Bold))
+        self.name_label.setObjectName('name_label')
+        self.name_label.setFont(_label_font)
         self.name_label.setAlignment(Qt.AlignCenter)
-        self.name_label.setStyleSheet('color: blue;')
+        self.name_label.setFixedWidth(_box_width)
 
         middle_layout.addWidget(self.num_label)
         middle_layout.addWidget(self.name_label)
@@ -96,35 +104,18 @@ class MainWindow(QMainWindow):
         about_menu.addAction(about_action)
 
         # Mode menu
-        mode_menu = menubar.addMenu(self.language_data['Mode'])
-        light_action = QAction(self.language_data['Light'], self)
-        light_action.triggered.connect(lambda: self.change_mode('Light'))
-        dark_action = QAction(self.language_data['Dark'], self)
-        dark_action.triggered.connect(lambda: self.change_mode('Dark'))
-        mode_menu.addAction(light_action)
-        mode_menu.addAction(dark_action)
+        self.mode_menu = menubar.addMenu(self.language_data['Mode'])
 
-        # Language menu (radio buttons)
+        # Language menu
         self.lang_menu = menubar.addMenu(self.language_data['Language'])
-        # self.lang_actions = []
 
     def change_mode(self, mode):
         self.current_mode = mode
         self.apply_theme(mode)
 
     def apply_theme(self, mode):
-        if mode == 'Dark':
-            self.setStyleSheet('''
-                QMainWindow { background-color: #222; color: white; }
-                QLabel { color: white; }
-                QPushButton { background-color: #555; color: white; }
-            ''')
-        else:
-            self.setStyleSheet('''
-                QMainWindow { background-color: #fff; color: black; }
-                QLabel { color: black; }
-                QPushButton { background-color: #e0e0e0; color: black; }
-            ''')
+        with open (STYLE_DIR / f'{mode}.css', 'r') as f:
+            self.setStyleSheet(f.read())
 
     def show_help(self):
         dlg = QMessageBox(self)

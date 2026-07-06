@@ -10,6 +10,7 @@ from PySide6.QtGui import QAction
 from .constant import (
     DEBUG,
     LANGUAGE_DIR,
+    STYLE_DIR
 )
 from .tools import restart, sigint_handler, load_settings, write_settings, load_language
 from .ui import MainWindow
@@ -125,6 +126,15 @@ class Main:
 
         # Random button
         self.main_window.random_btn.clicked.connect(self.picker.make_random)
+
+        # Mode menu
+        for mode in STYLE_DIR.iterdir():
+            if not mode.name.endswith('.css'):
+                continue
+            mode = mode.stem
+            action = QAction(mode, self.main_window, checkable=False)
+            action.triggered.connect(lambda checked, m=mode: self.main_window.change_mode(m))
+            self.main_window.mode_menu.addAction(action)
 
         # Language menu
         for lang_file in os.listdir(LANGUAGE_DIR):
