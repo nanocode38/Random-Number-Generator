@@ -3,83 +3,394 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PyHelper: Python & Pygame Enhancement Toolkit</title>
-    <link rel="icon" href="icon.png" type="image/x-icon">
-    <link rel="stylesheet" href="styles.css">
+    <title>Random Student Number Generator</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico?v=2">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico?v=2">
+    <link rel="stylesheet" href="style.css?v=2">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Particles container -->
-    <div id="particles-js"></div>
+    <!-- Animated Background -->
+    <div class="bg-gradient"></div>
+    <div class="bg-particles" id="particles"></div>
 
-    <!-- Navbar with logo -->
-    <div class="navbar">
-        <div class="logo-container">
-            <img src="icon_small.png" class="navbar-logo"></img>
-
-            <div class="logo-text">PyHelper</div>
-        </div>
-        <div class="nav-links">
-            <a href="https://GitHub.com/nanocode38/pyhelper.git" class="nav-button">GitHub</a>
-        <a href="https://github.com/nanocode38/pyhelper/releases/download/Version2.5.1/pyhelper-2.5.1-py3-none-any.whl" class="nav-button">Download</a>
-    </div>
-    </div>
-
-    <!-- Main content -->
-    <div class="content">
-        <!-- Main logo -->
-        <img src="icon.png" class="navbar-logo"></img>
-
-        <h1>Welcome to PyHelper</h1>
-        <h3>PyHelper is a powerful tool set for complementing Python and Pygame development. Enhance your coding experience with our utilities and helpers.</h3>
-
-        <div class="buttons-container">
-            <a href="https://github.com/nanocode38/pyhelper.git" class="animated-button">
-                <span class="button-icon">🌐</span> Link to GitHub
-            </a>
-            <a href="https://github.com/nanocode38/pyhelper/releases/download/Version2.5.1/pyhelper-2.5.1-py3-none-any.whl" class="animated-button download-btn">
-                <span class="button-icon">⬇️</span> Download Now
-            </a>
-        </div>
-
-        <!-- Features highlight -->
-        <div class="highlight">
-            <h2>Why Choose PyHelper?</h2>
-            <p>PyHelper streamlines Python and Pygame development with a comprehensive set of utilities designed to:</p>
-            <ul>
-                <li>Accelerate development time</li>
-                <li>Simplify complex tasks</li>
-                <li>Enhance game performance</li>
-                <li>Reduce boilerplate code</li>
-            </ul>
-
-        <!-- Features cards -->
-        <div class="features">
-            <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3 class="feature-title">Optimized Performance</h3>
-                <p class="feature-text">Accelerate your Pygame projects with our high-performance utilities.</p>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="LOGO.png" alt="Logo" class="logo-img">
+                <span class="logo-text">RSG</span>
             </div>
-
-            <div class="feature-card">
-                <div class="feature-icon">🛠️</div>
-                <h3 class="feature-title">Developer Tools</h3>
-                <p class="feature-text">Essential tools for debugging and optimizing your Python code.</p>
+            <div class="nav-links">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#download" class="nav-link">Download</a>
+                <a href="#about" class="nav-link">About</a>
             </div>
+            <div class="nav-actions">
+                <a href="https://github.com/nanocode38" target="_blank" rel="noopener" class="btn-icon" title="GitHub">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                </a>
+            </div>
+            <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
 
-            <div class="feature-card">
-                <div class="feature-icon">🧩</div>
-                <h3 class="feature-title">Easy Integration</h3>
-                <p class="feature-text">Seamlessly integrates with your existing Python and Pygame projects.</p>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#home" class="mobile-link">Home</a>
+        <a href="#features" class="mobile-link">Features</a>
+        <a href="#download" class="mobile-link">Download</a>
+        <a href="#about" class="mobile-link">About</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-badge" data-animate="fade-up">
+                    <span class="badge-dot"></span>
+                    v1.1.0 Available Now
+                </div>
+                <h1 class="hero-title" data-animate="fade-up" data-delay="100">
+                    Random Student<br>
+                    <span class="gradient-text">Number Generator</span>
+                </h1>
+                <p class="hero-description" data-animate="fade-up" data-delay="200">
+                    A modern desktop application for randomly selecting students by number.
+                    Built with PySide6 for a beautiful, native experience across platforms.
+                </p>
+                <div class="hero-buttons" data-animate="fade-up" data-delay="300">
+                    <a href="#download" class="btn btn-primary">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        Download Now
+                    </a>
+                    <a href="https://github.com/nanocode38" target="_blank" rel="noopener" class="btn btn-glass">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        View on GitHub
+                    </a>
+                </div>
+                <div class="hero-stats" data-animate="fade-up" data-delay="400">
+                    <div class="stat-item">
+                        <span class="stat-number" data-count="5000">0</span>+
+                        <span class="stat-label">Downloads</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-count="4">0</span>
+                        <span class="stat-label">Languages</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <span class="stat-number" data-count="100">0</span>%
+                        <span class="stat-label">Open Source</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-visual" data-animate="fade-left" data-delay="200">
+                <div class="app-mockup">
+                    <div class="mockup-header">
+                        <div class="mockup-dots">
+                            <span class="dot red"></span>
+                            <span class="dot yellow"></span>
+                            <span class="dot green"></span>
+                        </div>
+                        <span class="mockup-title">Random Student Picker</span>
+                    </div>
+                    <div class="mockup-body">
+                        <div class="mockup-display">
+                            <div class="mockup-number" id="mockupNumber">42</div>
+                            <div class="mockup-name" id="mockupName">Student Name</div>
+                        </div>
+                        <div class="mockup-controls">
+                            <div class="mockup-btn-primary" id="mockupBtn">🎲 Random</div>
+                            <div class="mockup-checkbox">
+                                <input type="checkbox" checked> Dedup
+                            </div>
+                        </div>
+                        <div class="mockup-class-select">
+                            <label>Class:</label>
+                            <select>
+                                <option>Class A</option>
+                                <option>Class B</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- Floating elements -->
+                <div class="floating-card card-1">
+                    <span class="fc-icon">🎯</span>
+                    <span class="fc-text">Random Pick</span>
+                </div>
+                <div class="floating-card card-2">
+                    <span class="fc-icon">🌙</span>
+                    <span class="fc-text">Dark Mode</span>
+                </div>
+                <div class="floating-card card-3">
+                    <span class="fc-icon">🌐</span>
+                    <span class="fc-text">Multi-Lang</span>
+                </div>
             </div>
         </div>
-    </div>
+        <div class="hero-scroll-indicator">
+            <span>Scroll to explore</span>
+            <div class="scroll-arrow">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12l7 7 7-7"/>
+                </svg>
+            </div>
+        </div>
+    </section>
 
-    <div class="footer">
-        © 2023 PyHelper | Python & Pygame Enhancement Toolkit
-    </div>
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-container">
+            <div class="section-header" data-animate="fade-up">
+                <span class="section-tag">Features</span>
+                <h2 class="section-title">Everything You Need for<br><span class="gradient-text">Fair Random Selection</span></h2>
+                <p class="section-description">Powerful features wrapped in a beautiful, intuitive interface</p>
+            </div>
+            <div class="features-grid">
+                <!-- Feature 1 -->
+                <div class="feature-card" data-animate="fade-up" data-delay="0">
+                    <div class="feature-icon-wrap">
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                <circle cx="9" cy="7" r="4"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="feature-title">CSV Class Rosters</h3>
+                    <p class="feature-desc">Load student lists from CSV files with flexible formatting. Supports both single-row and dual-row layouts for numbers and names.</p>
+                </div>
+                <!-- Feature 2 -->
+                <div class="feature-card" data-animate="fade-up" data-delay="100">
+                    <div class="feature-icon-wrap">
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                                <line x1="1" y1="10" x2="23" y2="10"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="feature-title">Smart Deduplication</h3>
+                    <p class="feature-desc">Enable deduplication mode to ensure every student is picked fairly. Automatically resets when all students have been selected.</p>
+                </div>
+                <!-- Feature 3 -->
+                <div class="feature-card" data-animate="fade-up" data-delay="200">
+                    <div class="feature-icon-wrap">
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                                <polyline points="21 3 21 9 15 9"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="feature-title">Edge-Hide Mode</h3>
+                    <p class="feature-desc">Drag the window to screen edges to auto-hide with smooth animations. Hover to bring it back — perfect for presentations.</p>
+                </div>
+                <!-- Feature 4 -->
+                <div class="feature-card" data-animate="fade-up" data-delay="0">
+                    <div class="feature-icon-wrap">
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="5"/>
+                                <line x1="12" y1="1" x2="12" y2="3"/>
+                                <line x1="12" y1="21" x2="12" y2="23"/>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                                <line x1="1" y1="12" x2="3" y2="12"/>
+                                <line x1="21" y1="12" x2="23" y2="12"/>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="feature-title">Light / Dark Themes</h3>
+                    <p class="feature-desc">Switch between beautiful light and dark themes. The UI adapts instantly with smooth transitions for comfortable use anytime.</p>
+                </div>
+                <!-- Feature 5 -->
+                <div class="feature-card" data-animate="fade-up" data-delay="100">
+                    <div class="feature-icon-wrap">
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M5 8l6 6 6-6"/>
+                            </svg>
+                            <span class="feature-icon-badge">EN</span>
+                        </div>
+                    </div>
+                    <h3 class="feature-title">Multi-Language</h3>
+                    <p class="feature-desc">Available in English, 中文简体, 中文繁體, 日本語, and 한국어. More languages can be added via JSON language files.</p>
+                </div>
+                <!-- Feature 6 -->
+                <div class="feature-card" data-animate="fade-up" data-delay="200">
+                    <div class="feature-icon-wrap">
+                        <div class="feature-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    <h3 class="feature-title">Cross-Platform</h3>
+                    <p class="feature-desc">Built with PySide6 (Qt for Python) for native performance on Windows, macOS, and Linux. Lightweight and fast.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <!-- Particles.js library -->
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-    <script src="scripts.js"></script>
+    <!-- Download Section -->
+    <section class="download" id="download">
+        <div class="section-container">
+            <div class="download-card glass-card" data-animate="fade-up">
+                <div class="download-header">
+                    <h2 class="section-title">Download Now</h2>
+                    <p class="section-description">Get the latest version for your platform</p>
+                </div>
+                <div class="download-platforms">
+                    <a href="https://github.com/nanocode38/Random-Number-Generator/releases/download/v1.1.0/StudentNumberGenerator-v1.1.0-windows-x86-64.zip" class="platform-card" data-animate="fade-up" data-delay="100">
+                        <div class="platform-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 12v7c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7c0-.6-.3-1.2-.7-1.5L12 3.5 3.7 10.5c-.4.3-.7.9-.7 1.5z"/>
+                            </svg>
+                        </div>
+                        <div class="platform-info">
+                            <h3>Windows</h3>
+                            <p>64-bit • .exe Installer</p>
+                        </div>
+                        <div class="platform-arrow">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                    </a>
+                    <a href="./coming-soon.html" class="platform-card" data-animate="fade-up" data-delay="200">
+                        <div class="platform-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.71 19.5c-.83 1.24-1.71 2.03-3.88 2.14-2.15.11-2.78-.76-3.57-.69-.76.07-1.7.72-2.69.65-.99-.07-1.75-.65-2.33-1.61-.43-.78-.69-1.77-.85-2.57-.15-.79-.08-1.42.08-2.06.16-.63.43-1.19.81-1.65.38-.46.87-.82 1.42-1.04.55-.22 1.15-.33 1.77-.33.62 0 1.22.11 1.77.33.55.22 1.04.58 1.42 1.04.38.46.65 1.02.81 1.65.16.64.23 1.27.08 2.06-.16.8-.42 1.79-.85 2.57-.58.96-1.34 1.54-2.33 1.61-.99.07-1.93-.58-2.69-.65-.79-.07-1.42.8-3.57.69-2.17-.11-3.05-.9-3.88-2.14-.83-1.24-1.29-2.87-1.29-4.5s.46-3.26 1.29-4.5c.83-1.24 1.71-2.03 3.88-2.14 2.15-.11 2.78.76 3.57.69.76-.07 1.7-.72 2.69-.65.99.07 1.75.65 2.33 1.61.43.78.69 1.77.85 2.57.15.79.08 1.42-.08 2.06-.16.63-.43 1.19-.81 1.65-.38.46-.87.82-1.42 1.04-.55.22-1.15.33-1.77.33-.62 0-1.22-.11-1.77-.33-.55-.22-1.04-.58-1.42-1.04-.38-.46-.65-1.02-.81-1.65-.16-.64-.23-1.27-.08-2.06.16-.8.42-1.79.85-2.57.58-.96 1.34-1.54 2.33-1.61.99-.07 1.93.58 2.69.65.79.07 1.42-.8 3.57-.69 2.17.11 3.05.9 3.88 2.14.83 1.24 1.29 2.87 1.29 4.5s-.46 3.26-1.29 4.5z"/>
+                            </svg>
+                        </div>
+                        <div class="platform-info">
+                            <h3>macOS</h3>
+                            <p>Universal • .dmg Package</p>
+                        </div>
+                        <div class="platform-arrow">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                    </a>
+                    <a href="./coming-soon.html" class="platform-card" data-animate="fade-up" data-delay="300">
+                        <div class="platform-icon">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/>
+                            </svg>
+                        </div>
+                        <div class="platform-info">
+                            <h3>Linux</h3>
+                            <p>64-bit • .AppImage / .deb</p>
+                        </div>
+                        <div class="platform-arrow">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                        </div>
+                    </a>
+                </div>
+                <div class="download-note glass-inner" data-animate="fade-up" data-delay="400">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    <span>Requires Python 3.8+ if running from source. All dependencies included in packaged releases.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About / Tech Stack Section -->
+    <section class="about" id="about">
+        <div class="section-container">
+            <div class="section-header" data-animate="fade-up">
+                <span class="section-tag">About</span>
+                <h2 class="section-title">Built with Modern<br><span class="gradient-text">Open-Source Tech</span></h2>
+            </div>
+            <div class="about-grid">
+                <div class="about-card glass-card" data-animate="fade-up" data-delay="0">
+                    <div class="about-card-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M16 18l6-6-6-6"/>
+                            <path d="M8 6l-6 6 6 6"/>
+                        </svg>
+                    </div>
+                    <h3>PySide6 (Qt)</h3>
+                    <p>Native desktop UI powered by Qt for Python. Smooth animations, translucent windows, and professional look & feel.</p>
+                </div>
+                <div class="about-card glass-card" data-animate="fade-up" data-delay="100">
+                    <div class="about-card-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                    </div>
+                    <h3>CSV Driven</h3>
+                    <p>Simple CSV format for class rosters. Just drop your files in the Classes folder — no database setup needed.</p>
+                </div>
+                <div class="about-card glass-card" data-animate="fade-up" data-delay="200">
+                    <div class="about-card-icon">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                    </div>
+                    <h3>MIT Licensed</h3>
+                    <p>Free and open-source under the MIT License. Fork it, modify it, distribute it — your choice.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <img src="logo.png" alt="Logo" class="footer-logo">
+                    <p>Random Student Number Generator<br>by nanocode38</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-col">
+                        <h4>Product</h4>
+                        <a href="#features">Features</a>
+                        <a href="#download">Download</a>
+                        <a href="https://github.com/nanocode38" target="_blank" rel="noopener">Changelog</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Resources</h4>
+                        <a href="https://github.com/nanocode38" target="_blank" rel="noopener">Documentation</a>
+                        <a href="https://github.com/nanocode38/issues" target="_blank" rel="noopener">Issues</a>
+                        <a href="https://download.com">Support</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 nanocode38. MIT License. Built with ❤️ and PySide6.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
