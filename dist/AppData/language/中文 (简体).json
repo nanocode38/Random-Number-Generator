@@ -13,10 +13,10 @@
     "Language Error": "语言更改失败!\n{type!s} :  {e}\n错误代码: {id}",
     "Restart Info": "语言更改成功!\n应用语言更改需要重启此程序, 是否重启?\n您也可以稍后手动重启。",
     "Hide": "贴边隐藏模式",
-    "Message": "全部学号已抽完!",
+    "Class file all drawn": "全部学号已抽完!",
     "About Text": "随机学号生成器 \n 由nanocode38使用Python PySide6制作, 本软件同步性能不佳, 长时间使用可能导致UI界面出错, 只需重启即可\n更多信息参加https://github.com/nanocode38/Random-Number-Generator.git",
     "Help Text": "随机学号生成器, \n 将按学号排序的使用逗号分隔的姓名表编写为csv文件后复制到Classes目录下, 然后启动程序并选择班级, 最后点击按钮抽学号",
     "Class file error title": "错误",
-    "Class file error": "找不到班级文件",
+    "Class file not found": "找不到班级文件",
     "Help Window Title": "帮助"
 }

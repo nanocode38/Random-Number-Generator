@@ -11,10 +11,11 @@
     "Language Error": "言語変更失敗!\n{type!s} :  {e}\nエラーコード: {id}",
     "Restart Info": "言語変更成功!\n言語変更を適用するにはこのプログラムを再起動する必要があります。再起動しますか?\n後で手動で再起動することも可能です。",
     "Hide": "端寄せ非表示モード",
-    "Message": "全学生番号が抽選済みです!",
+    "Class file all drawn": "全学生番号が抽選済みです!",
     "About Text": "ランダム学生番号生成器 \n nanocode38がPython PySide6で作成、このソフトウェアの同期性能は低く、長時間使用するとUIエラーが発生する可能性があります。再起動すれば解決します\n詳細はhttps://github.com/nanocode38/Random-Number-Generator.gitをご覧ください",
     "Help Text": "ランダム学生番号生成器, \n 学生番号順にソートされたカンマ区切り名簿をCSVファイルとして作成しClassesディレクトリにコピー、プログラムを起動してクラスを選択し、最後にボタンをクリックして学生番号を抽選",
     "Class file error title": "エラー",
-    "Class file error": "クラスファイルが見つかりません",
+    "Class file not found": "クラスファイルが見つかりません",
+    "Class file style error": "クラスファイルスタイルエラー! ファイルを読み込めません!",
     "Help Window Title": "ヘルプ"
 }

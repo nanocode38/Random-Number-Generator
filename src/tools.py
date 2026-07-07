@@ -1,12 +1,12 @@
-import sys
+import json
+import os
 import platform
 import subprocess
-import os
-import json
+import sys
 
 from PySide6.QtWidgets import QApplication, QMessageBox
 
-from .constant import APPDATA_DIR, LANGUAGE_DIR, DATA_FILE
+from .constant import LANGUAGE_DIR, DATA_FILE, DEBUG
 
 # Default settings used when data.json is missing or corrupted
 _DEFAULT_SETTINGS = {
@@ -14,6 +14,7 @@ _DEFAULT_SETTINGS = {
     'Edge hiding mode': False,
     'Language': 'English',
     'Mode': 'Light',
+    'Class': 'example'
 }
 
 def restart():
@@ -51,17 +52,19 @@ def load_settings():
         with open(DATA_FILE, encoding='utf-8') as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        sys.stderr.write(f'Warning: failed to load settings ({e}), using defaults\n')
+        if DEBUG:
+            sys.stderr.write(f'Warning: failed to load settings ({e}), using defaults\n')
         write_settings(**_DEFAULT_SETTINGS)
         return dict(_DEFAULT_SETTINGS)
 
-def write_settings(is_deduplication_mode, is_edge_hiding_mode, mode, language):
+def write_settings(is_deduplication_mode, is_edge_hiding_mode, mode, language, class_):
     with open(DATA_FILE, 'w', encoding='utf-8') as f:
         json.dump({
             'Deduplication mode': is_deduplication_mode,
             'Edge hiding mode': is_edge_hiding_mode,
             'Language': language,
-            'Mode': mode
+            'Mode': mode,
+            'Class': class_
         }, f)
 
 def load_language(lang):

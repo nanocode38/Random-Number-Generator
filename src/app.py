@@ -26,7 +26,7 @@ class Main:
     student picker, and edge hider.
     """
 
-    def __init__(self, is_deduplication_mode, is_edge_hiding_mode, mode, language):
+    def __init__(self, is_deduplication_mode, is_edge_hiding_mode, mode, language, class_):
         self.current_mode = mode
         self.current_language = language
         self.language_data = load_language(language)
@@ -36,7 +36,7 @@ class Main:
         self.main_window.apply_theme(mode)
 
         # Create components
-        self.picker = StudentPicker(self.main_window, self.language_data)
+        self.picker = StudentPicker(self.main_window, self.language_data, class_)
         self.edge_hider = EdgeHider(self.main_window)
 
         # Wire up widgets
@@ -66,6 +66,7 @@ class Main:
             self.main_window.hide_check.isChecked(),
             self.current_mode,
             self.current_language,
+            self.picker.selected_class
         )
 
     # ------------------------------------------------------------------
@@ -158,6 +159,7 @@ def main():
             settings["Edge hiding mode"],
             settings["Mode"],
             settings["Language"],
+            settings["Class"]
         )
         sys.exit(app.exec())
     except Exception as e:
