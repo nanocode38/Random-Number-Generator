@@ -18,6 +18,7 @@ __pycatch__/
 build/
 DEBUG
 baseIndex.html
+*.log
 .workbuddy/
 
 # Windows specific files

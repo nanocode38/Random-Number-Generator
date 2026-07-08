@@ -1,3 +1,5 @@
+import logging
+
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QLabel, QComboBox,
     QCheckBox, QPushButton, QMessageBox,
@@ -15,6 +17,8 @@ from .constant import (
 
 )
 
+logger = logging.getLogger("Random Student Number Generator")
+
 __all__ = [
     'MainWindow',
     'FloatingWindow'
@@ -23,6 +27,7 @@ __all__ = [
 class MainWindow(QMainWindow):
     def __init__(self, language_data, mode):
         super().__init__()
+        logger.debug("Initializing MainWindow (mode=%s)", mode)
 
         self.language_data = language_data
         self.current_mode = mode
@@ -35,12 +40,17 @@ class MainWindow(QMainWindow):
         else:
             self.setFixedSize(ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
         self.setWindowIcon(QIcon(str(APPDATA_DIR / 'icon.ico')))
+        logger.debug("Window basic settings applied (title='%s', opacity=%s, size=%dx%d)",
+                      self.language_data['Title'], WINDOW_OPACITY,
+                      ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
 
         # Create controls
         self._create_widgets()
         self._create_menu()
+        logger.debug("MainWindow initialization complete")
 
     def _create_widgets(self):
+        logger.debug("Building UI widgets")
         central = QWidget()
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
@@ -90,8 +100,10 @@ class MainWindow(QMainWindow):
         self.random_btn = QPushButton(self.language_data['Button Text'])
         self.random_btn.setFont(QFont('Times', 28, QFont.Bold))
         layout.addWidget(self.random_btn, alignment=Qt.AlignBottom)
+        logger.debug("UI widgets built successfully")
 
     def _create_menu(self):
+        logger.debug("Building menu bar")
         menubar = self.menuBar()
 
         # About menu
@@ -108,22 +120,36 @@ class MainWindow(QMainWindow):
 
         # Language menu
         self.lang_menu = menubar.addMenu(self.language_data['Language'])
+        logger.debug("Menu bar built successfully (About, Mode, Language)")
 
     def change_mode(self, mode):
+        logger.info("Changing theme mode to: %s", mode)
         self.current_mode = mode
         self.apply_theme(mode)
 
     def apply_theme(self, mode):
-        with open (STYLE_DIR / f'{mode}.css', 'r') as f:
-            self.setStyleSheet(f.read())
+        theme_path = STYLE_DIR / f'{mode}.css'
+        logger.debug("Applying theme from: %s", theme_path)
+        try:
+            with open(theme_path, 'r') as f:
+                self.setStyleSheet(f.read())
+            logger.debug("Theme applied successfully: %s", mode)
+        except FileNotFoundError:
+            logger.error("Theme file not found: %s", theme_path)
+            raise
+        except Exception as e:
+            logger.error("Failed to apply theme '%s': %s", mode, e, exc_info=True)
+            raise
 
     def show_help(self):
+        logger.info("Showing help dialog")
         dlg = QMessageBox(self)
         dlg.setWindowTitle(self.language_data['Help Window Title'])
         dlg.setText(self.language_data['Help Text'])
         dlg.exec()
 
     def show_about(self):
+        logger.info("Showing about dialog")
         dlg = QMessageBox(self)
         dlg.setWindowTitle(self.language_data['About'])
         dlg.setText(self.language_data['About Text'])

@@ -3,6 +3,7 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 os.chdir(BASE_DIR)
+print(os.getcwd())
 
 APPDATA_DIR = BASE_DIR / 'AppData'
 CLASSES_DIR = BASE_DIR / 'Classes'
