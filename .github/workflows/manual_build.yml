@@ -1,0 +1,64 @@
+name: Manual Nuitka Build (Linux & macOS)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # --- Install system dependencies (Linux only) ---
+      - name: Install system dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf libegl1 libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xfixes0 libxcb-xinerama0
+
+      # --- Install project from pyproject.toml ---
+      - name: Install project and dependencies
+        run: |
+          pip install --upgrade pip
+          pip install .                     # 安装项目自身及其依赖（根据 pyproject.toml）
+          pip install nuitka zstandard      # 编译工具单独装
+
+      # --- Linux build ---
+      - name: Build with Nuitka (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          python -m nuitka --standalone \
+            --onefile \
+            --enable-plugin=pyside6 \
+            --output-dir=./dist \
+            --output-filename=StudentNumberGenerator \
+            enter.py
+
+      # --- macOS build ---
+      - name: Build with Nuitka (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          python -m nuitka --standalone \
+            --onefile \
+            --enable-plugin=pyside6 \
+            --output-dir=./dist \
+            --output-filename=StudentNumberGenerator \
+            enter.py
+
+      # --- Upload artifacts ---
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-build
+          path: |
+            dist/StudentNumberGenerator*
+          include-hidden-files: true
