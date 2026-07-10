@@ -18,7 +18,7 @@ from .constant import (
     MODE_SHOW,
 )
 from .animation import Animation
-
+from .logger import logger
 
 class EdgeHider:
     """Manages edge-hiding behaviour: detects when the main window is near
@@ -27,6 +27,7 @@ class EdgeHider:
     """
 
     def __init__(self, main_window: MainWindow):
+        logger.debug("Initializing EdgeHider")
         self.main_window = main_window
         self.floating_window: FloatingWindow | None = None
         self._is_animate = False
@@ -36,6 +37,7 @@ class EdgeHider:
         # Polling timer — checks edge proximity every 50 ms
         self._timer = QTimer(main_window)
         self._timer.timeout.connect(self._tick)
+        logger.debug("EdgeHider initialized (polling interval=50ms)")
 
     # ------------------------------------------------------------------
     # Public API
@@ -43,20 +45,25 @@ class EdgeHider:
 
     def enable(self):
         """Start edge-hiding mode."""
+        logger.info("Enabling edge-hiding mode")
         if not self.floating_window:
+            logger.debug("Floating window not yet created, setting up now")
             self._setup_floating_window()
         self.main_window.setWindowFlag(Qt.WindowStaysOnTopHint, True)
         self.main_window.show()
         self._timer.start(50)
+        logger.debug("Edge-hiding timer started")
 
     def disable(self):
         """Stop edge-hiding mode and restore visibility."""
+        logger.info("Disabling edge-hiding mode")
         self._timer.stop()
         self._boundary_timer = 0.0
         if self.floating_window:
             self.floating_window.hide()
         self.main_window.setWindowFlag(Qt.WindowStaysOnTopHint, False)
         self.main_window.show()
+        logger.debug("Edge-hiding disabled, window visibility restored")
 
     # ------------------------------------------------------------------
     # Internal — floating window setup
@@ -65,6 +72,7 @@ class EdgeHider:
     def _setup_floating_window(self):
         from .ui import FloatingWindow
 
+        logger.debug("Setting up floating window")
         fw = FloatingWindow(None)
         fw.setWindowFlags(Qt.Tool | Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         fw.setAttribute(Qt.WA_TranslucentBackground)
@@ -83,6 +91,7 @@ class EdgeHider:
         fw.mouse_button_press.connect(lambda: self._check_activate(force=True))
 
         self.floating_window = fw
+        logger.debug("Floating window setup complete")
 
     # ------------------------------------------------------------------
     # Internal — polling loop
@@ -113,7 +122,10 @@ class EdgeHider:
 
         if self._boundary_timer == 0.0:
             self._boundary_timer = time.time()
+            logger.debug("Window near edge detected (left=%s, right=%s), starting delay timer",
+                         near_left, near_right)
         elif time.time() - self._boundary_timer >= EDGE_HIDDEN_DELAY_TIME:
+            logger.debug("Edge delay elapsed, triggering hide animation")
             if near_left:
                 fx = -self.floating_window.width() // 4
             else:
@@ -129,6 +141,7 @@ class EdgeHider:
     def _check_activate(self, force=False):
         if force or (self._activate_timer != 0.0
                      and time.time() - self._activate_timer >= EDGE_HIDDEN_DELAY_TIME):
+            logger.debug("Triggering show animation (force=%s)", force)
             self.floating_window.hide()
             animation = Animation(
                 self.main_window, self.floating_window,
@@ -153,13 +166,17 @@ class EdgeHider:
     # ------------------------------------------------------------------
 
     def _on_float_enter(self):
+        logger.debug("Mouse entered floating window, starting activate timer")
         self._activate_timer = time.time()
 
     def _on_float_leave(self):
+        logger.debug("Mouse left floating window, cancelling activate timer")
         self._activate_timer = 0.0
 
     def _on_anim_start(self):
+        logger.debug("Animation started")
         self._is_animate = True
 
     def _on_anim_finish(self):
+        logger.debug("Animation finished")
         self._is_animate = False

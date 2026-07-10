@@ -17,6 +17,9 @@ __pycatch__/
 *.spec
 build/
 DEBUG
+baseIndex.html
+*.log
+.workbuddy/
 
 # Windows specific files
 [Dd]esktop.ini

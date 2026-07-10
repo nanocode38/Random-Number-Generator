@@ -13,10 +13,10 @@
   "Language Error": "언어 변경 실패!\n{type!s} :  {e}\n오류 코드: {id}",
   "Restart Info": "언어 변경 성공!\n언어 변경을 적용하려면 이 프로그램을 재시작해야 합니다. 지금 재시작하시겠습니까?\n나중에 수동으로 재시작할 수도 있습니다.",
   "Hide": "가장자리 숨김 모드",
-  "Message": "모든 학번이 추첨되었습니다!",
+  "Class file all drawn": "모든 학번이 추첨되었습니다!",
   "About Text": "무작위 학번 생성기 \n nanocode38이 Python PySide6로 제작했습니다. 이 소프트웨어의 동기화 성능이 좋지 않아 장시간 사용 시 UI 인터페이스에 오류가 발생할 수 있습니다. 재시작하면 됩니다.\n자세한 정보는 https://github.com/nanocode38/Random-Number-Generator.git을 참조하세요.",
   "Help Text": "무작위 학번 생성기입니다. \n 학번 순서로 정렬된 쉼표로 구분된 이름표를 csv 파일로 작성하여 Classes 디렉토리에 복사한 후 프로그램을 실행하고 반을 선택한 다음 버튼을 클릭하여 학번을 뽑으세요.",
   "Class file error title": "오류",
-  "Class file error": "반 파일을 찾을 수 없습니다",
+  "Class file not found": "반 파일을 찾을 수 없습니다",
   "Help Window Title": "도움말"
 }

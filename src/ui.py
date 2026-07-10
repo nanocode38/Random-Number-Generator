@@ -1,19 +1,23 @@
+import logging
+
 from PySide6.QtWidgets import (
     QMainWindow, QWidget, QLabel, QComboBox,
     QCheckBox, QPushButton, QMessageBox,
     QVBoxLayout, QHBoxLayout
 )
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QFont, QIcon, QAction
+from PySide6.QtGui import QFont, QFontMetrics, QIcon, QAction
 
 from .constant import (
     ROOT_WINDOW_WIDTH,
     ROOT_WINDOW_HEIGHT,
     DEBUG,
     APPDATA_DIR,
-    WINDOW_OPACITY
+    WINDOW_OPACITY, STYLE_DIR
 
 )
+
+logger = logging.getLogger("Random Student Number Generator")
 
 __all__ = [
     'MainWindow',
@@ -23,6 +27,7 @@ __all__ = [
 class MainWindow(QMainWindow):
     def __init__(self, language_data, mode):
         super().__init__()
+        logger.debug("Initializing MainWindow (mode=%s)", mode)
 
         self.language_data = language_data
         self.current_mode = mode
@@ -35,12 +40,17 @@ class MainWindow(QMainWindow):
         else:
             self.setFixedSize(ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
         self.setWindowIcon(QIcon(str(APPDATA_DIR / 'icon.ico')))
+        logger.debug("Window basic settings applied (title='%s', opacity=%s, size=%dx%d)",
+                      self.language_data['Title'], WINDOW_OPACITY,
+                      ROOT_WINDOW_WIDTH, ROOT_WINDOW_HEIGHT)
 
         # Create controls
         self._create_widgets()
         self._create_menu()
+        logger.debug("MainWindow initialization complete")
 
     def _create_widgets(self):
+        logger.debug("Building UI widgets")
         central = QWidget()
         self.setCentralWidget(central)
         layout = QVBoxLayout(central)
@@ -64,15 +74,23 @@ class MainWindow(QMainWindow):
 
         # Middle area: display number and name
         middle_layout = QHBoxLayout()
+
+        # Calculate fixed width for 9 half-width characters
+        _label_font = QFont('Times', 24, QFont.Bold)
+        _fm = QFontMetrics(_label_font)
+        _box_width = _fm.averageCharWidth() * 9 + 28  # +24 padding + 4 border
+
         self.num_label = QLabel('')
-        self.num_label.setFont(QFont('Times', 48, QFont.Bold))
+        self.num_label.setObjectName('num_label')
+        self.num_label.setFont(_label_font)
         self.num_label.setAlignment(Qt.AlignCenter)
-        self.num_label.setStyleSheet('color: blue;')
+        self.num_label.setFixedWidth(_box_width)
 
         self.name_label = QLabel('')
-        self.name_label.setFont(QFont('Times', 32, QFont.Bold))
+        self.name_label.setObjectName('name_label')
+        self.name_label.setFont(_label_font)
         self.name_label.setAlignment(Qt.AlignCenter)
-        self.name_label.setStyleSheet('color: blue;')
+        self.name_label.setFixedWidth(_box_width)
 
         middle_layout.addWidget(self.num_label)
         middle_layout.addWidget(self.name_label)
@@ -82,8 +100,10 @@ class MainWindow(QMainWindow):
         self.random_btn = QPushButton(self.language_data['Button Text'])
         self.random_btn.setFont(QFont('Times', 28, QFont.Bold))
         layout.addWidget(self.random_btn, alignment=Qt.AlignBottom)
+        logger.debug("UI widgets built successfully")
 
     def _create_menu(self):
+        logger.debug("Building menu bar")
         menubar = self.menuBar()
 
         # About menu
@@ -96,43 +116,40 @@ class MainWindow(QMainWindow):
         about_menu.addAction(about_action)
 
         # Mode menu
-        mode_menu = menubar.addMenu(self.language_data['Mode'])
-        light_action = QAction(self.language_data['Light'], self)
-        light_action.triggered.connect(lambda: self.change_mode('Light'))
-        dark_action = QAction(self.language_data['Dark'], self)
-        dark_action.triggered.connect(lambda: self.change_mode('Dark'))
-        mode_menu.addAction(light_action)
-        mode_menu.addAction(dark_action)
+        self.mode_menu = menubar.addMenu(self.language_data['Mode'])
 
-        # Language menu (radio buttons)
+        # Language menu
         self.lang_menu = menubar.addMenu(self.language_data['Language'])
-        # self.lang_actions = []
+        logger.debug("Menu bar built successfully (About, Mode, Language)")
 
     def change_mode(self, mode):
+        logger.info("Changing theme mode to: %s", mode)
         self.current_mode = mode
         self.apply_theme(mode)
 
     def apply_theme(self, mode):
-        if mode == 'Dark':
-            self.setStyleSheet('''
-                QMainWindow { background-color: #222; color: white; }
-                QLabel { color: white; }
-                QPushButton { background-color: #555; color: white; }
-            ''')
-        else:
-            self.setStyleSheet('''
-                QMainWindow { background-color: #fff; color: black; }
-                QLabel { color: black; }
-                QPushButton { background-color: #e0e0e0; color: black; }
-            ''')
+        theme_path = STYLE_DIR / f'{mode}.css'
+        logger.debug("Applying theme from: %s", theme_path)
+        try:
+            with open(theme_path, 'r') as f:
+                self.setStyleSheet(f.read())
+            logger.debug("Theme applied successfully: %s", mode)
+        except FileNotFoundError:
+            logger.error("Theme file not found: %s", theme_path)
+            raise
+        except Exception as e:
+            logger.error("Failed to apply theme '%s': %s", mode, e, exc_info=True)
+            raise
 
     def show_help(self):
+        logger.info("Showing help dialog")
         dlg = QMessageBox(self)
         dlg.setWindowTitle(self.language_data['Help Window Title'])
         dlg.setText(self.language_data['Help Text'])
         dlg.exec()
 
     def show_about(self):
+        logger.info("Showing about dialog")
         dlg = QMessageBox(self)
         dlg.setWindowTitle(self.language_data['About'])
         dlg.setText(self.language_data['About Text'])
