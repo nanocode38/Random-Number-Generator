@@ -1,4 +1,5 @@
 import logging.handlers
+import os
 import sys
 
 from .constant import DEBUG
@@ -21,6 +22,7 @@ if DEBUG:
     console_handler.setLevel(logging.DEBUG)
     console_handler.setFormatter(formatter)
     logger.addHandler(console_handler)
+os.makedirs('logging', exist_ok=True)
 file_handler = logging.handlers.TimedRotatingFileHandler('logging/RSG.log', when='midnight', interval=1, backupCount=7)
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
