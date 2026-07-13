@@ -5,8 +5,6 @@
     "Help": "Help",
     "About": "About",
     "Mode": "Theme",
-    "Dark": "Dark Mode",
-    "Light": "Light Mode",
     "Class": "Class",
     "Button Text": "Generate",
     "Deduplication": "Deduplication",
@@ -18,5 +16,6 @@
     "Help Text": "Random Student Number Generator, \n Write a comma-separated list of names sorted by student number as a csv file and copy it to the Classes directory, then start the program and select the class, finally click the button to draw student numbers",
     "Class file error title": "Error",
     "Class file not found": "Cannot find class file",
+    "Class file style error": "Class file style error! Cannot load file!",
     "Help Window Title": "Help"
 }

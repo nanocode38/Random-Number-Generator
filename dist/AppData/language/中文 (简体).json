@@ -5,8 +5,6 @@
     "Help": "帮助",
     "About": "关于",
     "Mode": "主题",
-    "Dark": "暗黑模式",
-    "Light": "灯光模式",
     "Class": "班级",
     "Button Text": "生成随机学号",
     "Deduplication": "去重模式",
@@ -18,5 +16,6 @@
     "Help Text": "随机学号生成器, \n 将按学号排序的使用逗号分隔的姓名表编写为csv文件后复制到Classes目录下, 然后启动程序并选择班级, 最后点击按钮抽学号",
     "Class file error title": "错误",
     "Class file not found": "找不到班级文件",
+    "Class file style error": "班级文件样式错误! 无法加载文件!",
     "Help Window Title": "帮助"
 }

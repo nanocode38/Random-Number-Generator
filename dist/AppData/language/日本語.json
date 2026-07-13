@@ -5,8 +5,6 @@
     "Help": "ヘルプ",
     "About": "について",
     "Mode": "テーマ",
-    "Dark": "ダークモード",
-    "Light": "ライトモード",
     "Class": "クラス",
     "Button Text": "ランダム学生番号生成",
     "Deduplication": "重複排除モード",
@@ -18,5 +16,6 @@
     "Help Text": "ランダム学生番号生成器, \n 学生番号順にソートされたカンマ区切り名簿をCSVファイルとして作成しClassesディレクトリにコピー、プログラムを起動してクラスを選択し、最後にボタンをクリックして学生番号を抽選",
     "Class file error title": "エラー",
     "Class file not found": "クラスファイルが見つかりません",
+    "Class file style error": "クラスファイルスタイルエラー! ファイルを読み込めません!",
     "Help Window Title": "ヘルプ"
 }
