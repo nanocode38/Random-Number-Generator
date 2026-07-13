@@ -1,0 +1,130 @@
+name: PyInstaller Build Linux & macOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  # ============================================================
+  # Linux 构建：使用 ubuntu:20.04 容器（glibc 2.31）
+  # 覆盖：银河麒麟 V10、统信 UOS、Ubuntu 20.04+、Debian 11+、Fedora 35+
+  # ============================================================
+  build-linux:
+    runs-on: ubuntu-22.04
+    container:
+      image: ubuntu:20.04
+      env:
+        DEBIAN_FRONTEND: noninteractive
+
+    steps:
+      - name: Checkout 源码
+        uses: actions/checkout@v4
+
+      - name: 安装系统依赖
+        run: |
+          apt-get update
+          apt-get install -y gnupg wget
+          # 手动导入 deadsnakes PPA GPG key（容器中 add-apt-repository 不会自动导入）
+          wget -qO - "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xBA6932366A755776&options=mr" | apt-key add -
+          echo "deb http://ppa.launchpad.net/deadsnakes/ppa/ubuntu focal main" > /etc/apt/sources.list.d/deadsnakes.list
+          apt-get update
+          apt-get install -y \
+            python3.11 python3.11-venv \
+            libegl1 libgl1 libxkbcommon-x11-0 \
+            libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
+            libxcb-render-util0 libxcb-xfixes0 libxcb-xinerama0 \
+            libfontconfig1 libfreetype6 libxrender1 libxi6 libxtst6 \
+            libdbus-1-3 libglib2.0-0
+          # libxcb-cursor0 不在 Ubuntu 20.04 仓库中，临时从 jammy(22.04) 安装
+          echo "deb http://archive.ubuntu.com/ubuntu jammy main" > /etc/apt/sources.list.d/jammy.list
+          apt-get update
+          apt-get install -y --no-install-recommends libxcb-cursor0 || echo "Warning: libxcb-cursor0 install failed"
+          rm -f /etc/apt/sources.list.d/jammy.list
+
+      - name: 安装 Python 依赖
+        run: |
+          python3.11 -m venv /opt/venv
+          /opt/venv/bin/pip install --upgrade pip
+          /opt/venv/bin/pip install pyinstaller PySide6
+
+      - name: PyInstaller 构建
+        run: |
+          export QT_API=pyside6
+          /opt/venv/bin/pyinstaller \
+            --windowed \
+            --noconfirm \
+            --clean \
+            --name StudentNumberGenerator \
+            --exclude-module PyQt5 \
+            --add-data "AppData:AppData" \
+            --add-data "Classes:Classes" \
+            enter.py
+
+      - name: 清理 gvfs/gio 冲突模块
+        run: |
+          # 删除 gvfs 和 gio 模块目录（程序不需要，且会导致跨系统 GLib 版本冲突）
+          find ./dist/StudentNumberGenerator/_internal \
+            -type d \( -name "gio" -o -name "gvfs" \) \
+            -exec rm -rf {} + 2>/dev/null || true
+          find ./dist/StudentNumberGenerator/_internal \
+            -name "libgvfs*" -delete 2>/dev/null || true
+
+      - name: 生成启动脚本
+        run: |
+          cat > ./dist/启动程序.sh << 'EOF'
+          #!/bin/bash
+          # 强制使用 X11（兼容 Wayland 和旧系统）
+          export QT_QPA_PLATFORM=xcb
+          # 禁用 GIO 模块加载（避免跨系统 GLib 版本冲突）
+          export GIO_MODULE_DIR=""
+          export GVFS_DISABLE_FUSE=1
+          cd "$(dirname "$0")"
+          ./StudentNumberGenerator
+          EOF
+          chmod +x ./dist/启动程序.sh
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-pyinstaller-build
+          path: ./dist/
+          include-hidden-files: true
+
+  # ============================================================
+  # macOS 构建：无需容器，直接在 macos-latest 上构建
+  # ============================================================
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout 源码
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 安装 Python 依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller PySide6
+
+      - name: PyInstaller 构建 macOS
+        run: |
+          export QT_API=pyside6
+          pyinstaller \
+            --windowed \
+            --noconfirm \
+            --clean \
+            --name StudentNumberGenerator \
+            --exclude-module PyQt5 \
+            --add-data "AppData:AppData" \
+            --add-data "Classes:Classes" \
+            enter.py
+
+      - name: 上传产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-pyinstaller-build
+          path: ./dist/
+          include-hidden-files: true

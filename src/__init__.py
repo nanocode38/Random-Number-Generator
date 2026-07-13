@@ -45,5 +45,5 @@ MIT License. See LICENSE file for details.
 # Package version — also read by pyproject.toml via setuptools dynamic version.
 # Do NOT import heavy dependencies (e.g. PySide6) in this file,
 # otherwise setuptools will fail during build without the GUI runtime installed.
-__version__ = '1.1.0'
+__version__ = '1.2.0'
 __author__ = 'nanocode38'

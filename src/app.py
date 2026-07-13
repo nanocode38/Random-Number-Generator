@@ -23,8 +23,16 @@ __author__ = 'nanocode38'
 
 
 class Main:
-    """Lightweight coordinator that wires together the main window,
+    """
+    Lightweight coordinator that wires together the main window,
     student picker, and edge hider.
+
+    Args:
+        is_deduplication_mode (bool): Whether to enable deduplication mode.
+        is_edge_hiding_mode (bool): Whether to enable edge-hiding mode.
+        mode (str): Current theme mode (light/dark).
+        language (str): Current language.
+        class_ (str): Current class name.
     """
 
     def __init__(self, is_deduplication_mode, is_edge_hiding_mode, mode, language, class_):
@@ -74,6 +82,10 @@ class Main:
     # ------------------------------------------------------------------
 
     def save_settings(self):
+        """
+        Save current settings to disk.
+        entrusted to tools.write_settings().
+        """
         logger.info("Saving settings on application quit")
         write_settings(
             self.main_window.dedup_check.isChecked(),
@@ -90,6 +102,7 @@ class Main:
     # ------------------------------------------------------------------
 
     def change_language(self, language):
+        """Change language to the specified one and restart the application."""
         logger.info("Attempting to change language to: %s", language)
         try:
             language_file = LANGUAGE_DIR / f'{language}.json'
@@ -128,6 +141,7 @@ class Main:
     # ------------------------------------------------------------------
 
     def on_hide_mode_changed(self, state):
+        """Handle edge-hiding mode change."""
         is_edge_hiding = Qt.CheckState(state) == Qt.Checked
         logger.info("Edge hiding mode toggled: %s", is_edge_hiding)
         if is_edge_hiding:
@@ -182,6 +196,7 @@ class Main:
 
 
 def main():
+    """Main entry point for the application."""
     logger.info("=== Application starting (version %s) ===", __version__)
     logger.debug("DEBUG mode: %s", DEBUG)
 
