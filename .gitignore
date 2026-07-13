@@ -19,6 +19,7 @@ build/
 DEBUG
 baseIndex.html
 *.log
+*.log.*
 .workbuddy/
 
 # Windows specific files

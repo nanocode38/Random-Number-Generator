@@ -37,7 +37,6 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           python -m nuitka --standalone \
-            --onefile \
             --enable-plugin=pyside6 \
             --output-dir=./dist \
             --output-filename=StudentNumberGenerator \
@@ -48,7 +47,6 @@ jobs:
         if: runner.os == 'macOS'
         run: |
           python -m nuitka --standalone \
-            --onefile \
             --enable-plugin=pyside6 \
             --output-dir=./dist \
             --output-filename=StudentNumberGenerator \
